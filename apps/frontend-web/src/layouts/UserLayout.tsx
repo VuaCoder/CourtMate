@@ -5,6 +5,7 @@ import { Footer } from '../components/landing/Footer';
 import { Header } from '../components/landing/Header';
 
 import { useNavigate } from 'react-router-dom';
+import SportsBackground from '../components/SportsBackground';
 
 export default function UserLayout({ children }: { children: React.ReactNode }) {
   const { logout } = useAuth();
@@ -16,7 +17,10 @@ export default function UserLayout({ children }: { children: React.ReactNode }) 
   };
 
   return (
-    <div className="bg-background text-on-background min-h-screen flex flex-col antialiased">
+    <div className="bg-background text-on-background min-h-screen flex flex-col antialiased relative overflow-hidden">
+      {/* Sports Background Pattern */}
+      <SportsBackground />
+
       {/* 100% Synchronized Header */}
       <Header />
 
