@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useLoading } from '../context/LoadingContext';
+import { API_URL } from '../config';
 
 export default function CreateTournamentPage() {
   const navigate = useNavigate();
@@ -24,7 +25,7 @@ export default function CreateTournamentPage() {
         formData.append('image', file);
         
         // This makes a call to the NestJS backend
-        const res = await fetch('http://localhost:3000/upload', {
+        const res = await fetch(`${API_URL}/upload`, {
           method: 'POST',
           body: formData,
         });

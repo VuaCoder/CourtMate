@@ -4,6 +4,7 @@ import { useGoogleLogin } from '@react-oauth/google';
 import { useAuth } from '../context/AuthContext';
 import { useLoading } from '../context/LoadingContext';
 import type { UserRole } from '../context/AuthContext';
+import { API_URL } from '../config';
 
 const ROLES: { value: UserRole; label: string; icon: string; desc: string }[] = [
   { value: 'user', label: 'Người dùng', icon: 'person', desc: 'Tham gia & theo dõi giải đấu' },
@@ -66,7 +67,7 @@ export default function LoginPage() {
     onSuccess: async (tokenResponse) => {
       try {
         showLoading('Đang xác thực với Google...');
-        const res = await fetch('http://localhost:3000/auth/google', {
+        const res = await fetch(`${API_URL}/auth/google`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ token: tokenResponse.access_token })

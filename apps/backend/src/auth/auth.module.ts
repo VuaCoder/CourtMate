@@ -3,14 +3,18 @@ import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { UsersModule } from '../users/users.module';
 import { JwtModule } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
 
 @Module({
   imports: [
     UsersModule,
-    JwtModule.register({
+    JwtModule.registerAsync({
       global: true,
-      secret: 'courtmate-secret-key-development', // Use environment variable in production
-      signOptions: { expiresIn: '7d' },
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => ({
+        secret: config.get<string>('JWT_SECRET') || 'courtmate-secret-key-development',
+        signOptions: { expiresIn: '7d' },
+      }),
     }),
   ],
   providers: [AuthService],
