@@ -109,7 +109,6 @@ export default function SignupPage() {
   };
 
   const handleGoogleSignup = useGoogleLogin({
-    redirect_uri: import.meta.env.VITE_GOOGLE_REDIRECT_URI,
     onSuccess: async (tokenResponse) => {
       try {
         showLoading('Đang xác thực với Google...');
