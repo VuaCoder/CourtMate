@@ -3,32 +3,41 @@ import { Link, useNavigate, useLocation, useSearchParams } from 'react-router-do
 import { useAuth } from '../../context/AuthContext';
 
 export function Header() {
+  const { role, isAuthenticated, userName, logout } = useAuth();
   const [isScrolled, setIsScrolled] = useState(false);
-  const { isAuthenticated, logout, role } = useAuth();
-  const navigate = useNavigate();
-  const location = useLocation();
-  const [searchParams, setSearchParams] = useSearchParams();
-
-  // States for dropdowns & search
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState(searchParams.get('q') || '');
+  const [searchQuery, setSearchQuery] = useState('');
   const [isNotifOpen, setIsNotifOpen] = useState(false);
   const [isAvatarOpen, setIsAvatarOpen] = useState(false);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const location = useLocation();
+  const navigate = useNavigate();
 
   const searchRef = useRef<HTMLDivElement>(null);
   const notifRef = useRef<HTMLDivElement>(null);
   const avatarRef = useRef<HTMLDivElement>(null);
 
+  // Dynamic notifications state
+  const [notifications, setNotifications] = useState<any[]>(() => {
+    const saved = localStorage.getItem('courtmate_notifications');
+    if (saved) return JSON.parse(saved);
+    const initial = [
+      { id: 1, text: 'Bạn đã đăng ký thành công giải Cầu Lông Đà Nẵng Open 2026', time: '1 giờ trước' },
+      { id: 2, text: 'Trận đấu Kèo Vãng Lai sẽ bắt đầu sau 2 tiếng', time: '3 giờ trước' }
+    ];
+    localStorage.setItem('courtmate_notifications', JSON.stringify(initial));
+    return initial;
+  });
+
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50);
+      if (window.scrollY > 10) {
+        setIsScrolled(true);
+      } else {
+        setIsScrolled(false);
+      }
     };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
 
-  // Handle outside clicks
-  useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
         setIsSearchOpen(false);
@@ -40,8 +49,30 @@ export function Header() {
         setIsAvatarOpen(false);
       }
     };
+
+    window.addEventListener('scroll', handleScroll);
     document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  // Sync notifications from localStorage
+  useEffect(() => {
+    const handleStorageChange = () => {
+      const saved = localStorage.getItem('courtmate_notifications');
+      if (saved) {
+        setNotifications(JSON.parse(saved));
+      }
+    };
+    window.addEventListener('storage', handleStorageChange);
+    const interval = setInterval(handleStorageChange, 1000);
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      clearInterval(interval);
+    };
   }, []);
 
   const handleLogout = () => {
@@ -66,11 +97,6 @@ export function Header() {
       navigate(`/tournaments?q=${encodeURIComponent(searchQuery)}`);
     }
   };
-
-  const mockNotifications = [
-    { id: 1, text: 'Bạn đã đăng ký thành công giải Cầu Lông Đà Nẵng Open 2024', time: '1 giờ trước' },
-    { id: 2, text: 'Trận đấu Kèo Vãng Lai sẽ bắt đầu sau 2 tiếng', time: '3 giờ trước' }
-  ];
 
   return (
     <header className="fixed top-0 w-full z-50 bg-white/80 dark:bg-inverse-surface/80 backdrop-blur-lg border-b border-primary/10 shadow-[0_4px_30px_rgba(0,104,95,0.03)] transition-all duration-300">
@@ -158,12 +184,16 @@ export function Header() {
                     <div className="absolute right-0 mt-2 w-[320px] bg-surface border border-outline-variant rounded-xl shadow-lg py-2 animate-fade-in-up z-50">
                       <div className="px-4 py-2 font-bold text-on-surface border-b border-outline-variant/30">Thông báo</div>
                       <div className="max-h-[300px] overflow-y-auto">
-                        {mockNotifications.map(n => (
-                          <div key={n.id} className="px-4 py-3 hover:bg-surface-variant/30 cursor-pointer border-b border-outline-variant/20 last:border-0">
-                            <p className="text-sm text-on-surface">{n.text}</p>
-                            <p className="text-xs text-on-surface-variant mt-1">{n.time}</p>
-                          </div>
-                        ))}
+                        {notifications.length === 0 ? (
+                          <div className="px-4 py-6 text-center text-sm text-on-surface-variant italic">Không có thông báo mới</div>
+                        ) : (
+                          notifications.map(n => (
+                            <div key={n.id} className="px-4 py-3 hover:bg-surface-variant/30 cursor-pointer border-b border-outline-variant/20 last:border-0">
+                              <p className="text-sm text-on-surface">{n.text}</p>
+                              <p className="text-xs text-on-surface-variant mt-1">{n.time}</p>
+                            </div>
+                          ))
+                        )}
                       </div>
                     </div>
                   )}
@@ -179,7 +209,7 @@ export function Header() {
               {/* Avatar Dropdown */}
               <div ref={avatarRef} className="relative ml-sm">
                 <button onClick={() => setIsAvatarOpen(!isAvatarOpen)} className="w-8 h-8 rounded-full overflow-hidden border border-outline-variant/50 cursor-pointer hover:ring-4 hover:ring-primary/20 hover:border-primary transition-all flex-shrink-0 group">
-                  <img alt="User Avatar" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBr1LsHiKBSTpRv61zSBn4zlnn2sNQ-KWj44i26qCoVvFQiJOKLr7Aqly52b1gr356zbqfH0nnGl3Uv6sjM19cjgzYw-3koEVmQvPvV_l23vUhVB6w-8RmzdS1Ih4k6dLIxi769gYroyixBFyF9I-lbcMCI_d1SfraF2n0nwXq2wkMefd6qsr9DQK_E_mThvNFD0jtqc1gvsMhzu0usZaqvh7IAGrQ401ELXFatAJXevqCUWwSEqp6PXA" />
+                  <img alt="User Avatar" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" src="https://ui-avatars.com/api/?name=User&background=3b82f6&color=fff" />
                 </button>
                 {isAvatarOpen && (
                   <div className="absolute right-0 mt-2 w-48 bg-surface border border-outline-variant rounded-xl shadow-lg py-2 animate-fade-in-up z-50 overflow-hidden">

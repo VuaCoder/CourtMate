@@ -3,6 +3,7 @@ import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { useAuth } from '../context/AuthContext';
+import TournamentDetailsModal from '../components/TournamentDetailsModal';
 import MatchDetailsModal from '../components/MatchDetailsModal';
 
 const COURTS = ['Cung Thể Thao Tiên Sơn', 'Sân Cầu Lông Kỳ Đồng', 'Sân Tuyên Sơn', 'Sân Tuyên Sơn Pickleball', 'Sân Cầu Lông Pinpon', 'Sân Lâm Gia'];
@@ -41,71 +42,75 @@ const QUICK_TAGS = [
 const generateMockPosts = () => {
   const posts = [
     {
-      id: 1, 
-      type: 'tournament', 
+      id: 1,
+      type: 'tournament',
       sport: 'badminton',
       sportLabel: 'Cầu lông',
-      authorName: 'CLB Đà Nẵng Open', 
-      authorAvatar: 'https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?auto=format&fit=crop&q=80&w=100&h=100',
+      authorName: 'CLB Đà Nẵng Open',
+      authorAvatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuANI1x_H2RdY7olRA7qX1WUUIfIQwHoIaH4XrzOH4c6xfkVkEVxoG0ydU0Eb_kSKsKTJ_ZEeb5_yK1xsS4WcB-CcZCY5gaT6_hCC0Mfgw49LUIEktD8ohKdrkEG-bbUKpyZecwlZSsl4PnlLXJdb5RX45pd-wpK12JQDpLJtkL3-aE8WkFUaTqt_tUkgl9CuWxYUFyiF7C1_TJACMEvJjnWRT41ersXAcDWf2jWblqU8X5Y3mbJ8HQKxA',
       coverImage: 'https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?auto=format&fit=crop&q=80&w=500&h=250',
-      postedTime: 'Đăng 2 giờ trước', 
-      statusText: 'Đang mở', 
-      title: 'Giải Cầu Lông Đà Nẵng Open 2026', 
-      desc: 'Giải đấu phong trào quy mô lớn nhất năm dành cho các tay vợt bán chuyên và phong trào tại Cung Tiên Sơn.', 
-      location: 'Cung Thể Thao Tiên Sơn', 
-      dateStr: '05/07/2026', 
-      fee: '500.000 VNĐ / người'
+      postedTime: 'Đăng 2 giờ trước',
+      statusText: 'Đang mở',
+      title: 'Giải Cầu Lông Đà Nẵng Open 2026',
+      desc: 'Giải đấu phong trào quy mô lớn nhất năm dành cho các tay vợt bán chuyên và phong trào.',
+      location: 'Cung Thể Thao Tiên Sơn',
+      dateStr: '05/07/2026',
+      fee: '500.000 VNĐ / người',
+      limit: 64
     },
     {
-      id: 2, 
-      type: 'match', 
+      id: 2,
+      type: 'match',
       sport: 'badminton',
       sportLabel: 'Cầu lông',
-      authorName: 'Nguyễn Ánh', 
+      authorName: 'Nguyễn Ánh',
       authorAvatar: 'https://ui-avatars.com/api/?name=Nguyen+Anh&background=ffb2b9&color=fff',
-      postedTime: 'Đăng 11 giờ trước', 
-      statusText: 'Cần người', 
-      title: 'Giao lưu cầu lông tối thứ 3', 
-      desc: 'Tuyển vãng lai sáng mai thứ 3 (30/06). Yêu cầu nhiệt tình, vui vẻ, không quạu.', 
-      location: 'Sân cầu lông Pinpon (KCN An Đồn)', 
-      schedule: '08:30 - 10:30', 
+      postedTime: 'Đăng 11 giờ trước',
+      statusText: 'Cần người',
+      title: 'Kèo Cầu lông vãng lai',
+      desc: 'Tuyển vãng lai sáng mai thứ 3 (30/06)\nĐịa điểm: sân cầu lông pinpon sân 11 (kcn an đồn)\nThời gian: 8h30-10h30\nTrình độ: yếu tby\nPhí: 40k\nChuyển khoản để chốt slot ạ',
+      location: 'Sân cầu lông Pinpon (KCN An Đồn)',
+      schedule: '08:30 - 10:30',
       level: 'Yếu - TB Yếu',
-      fee: '40.000 VNĐ / buổi',
-      slots: 'Còn 2 slot'
+      fee: '40.000 VNĐ / người',
+      slots: 'Còn 2 slot',
+      fbLink: 'https://www.facebook.com/groups/danangbadminton/posts/37195001866764864/',
     },
     {
-      id: 3, 
-      type: 'tournament', 
+      id: 3,
+      type: 'tournament',
       sport: 'pickleball',
       sportLabel: 'Pickleball',
-      authorName: 'CLB Thanh Khê', 
-      authorAvatar: 'https://images.unsplash.com/photo-1611566144960-4f7b1376a591?auto=format&fit=crop&q=80&w=100&h=100',
+      authorName: 'CLB Thanh Khê',
+      authorAvatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAjwkzH1br53KR99kc0gW3Db2VqGC745ZuwR5Hutz5w9Bhiv-JTBO6k7JMNCc_BVFSNVPhRMMHvmHjtPi2er8iQxX5hbW8pZVpGC7m37gcjdrxshGme76UHby0iOfpBNNF3l10Bn6GxUxV1XsMewZ773pfiplFj5cNwomjS5ARpEPNZU1yXjuZhry2UyYBqOY-qUownJeQZhjqXntXVR9Dcx5Z66KIIpajPoSadzaerzdiLyJ7dPLSxkA',
       coverImage: 'https://images.unsplash.com/photo-1611566144960-4f7b1376a591?auto=format&fit=crop&q=80&w=500&h=250',
-      postedTime: 'Đăng 1 ngày trước', 
-      statusText: 'Sắp đóng', 
-      title: 'Giải Pickleball Đôi Nam Nữ Thanh Khê 2026', 
-      desc: 'Giải đấu giao lưu nội bộ quận Thanh Khê, tập trung vào thể thức đôi nam nữ phong trào.', 
-      location: 'Sân Tuyên Sơn Pickleball', 
-      dateStr: '02/09/2026', 
-      fee: '300.000 VNĐ / cặp'
+      postedTime: 'Đăng 1 ngày trước',
+      statusText: 'Sắp đóng',
+      title: 'Giải Pickleball Đôi Nam Nữ Thanh Khê',
+      desc: 'Giải đấu giao lưu nội bộ quận Thanh Khê, tập trung vào thể thức đôi nam nữ.',
+      location: 'Sân Cầu Lông Kỳ Đồng',
+      dateStr: '02/09/2026',
+      fee: '300.000 VNĐ / cặp',
+      limit: 32
     },
     {
-      id: 4, 
-      type: 'match', 
-      sport: 'pickleball',
-      sportLabel: 'Pickleball',
-      authorName: 'Mai Sương', 
-      authorAvatar: 'https://ui-avatars.com/api/?name=Mai+Suong&background=c2f3e8&color=00685f',
-      postedTime: 'Đăng 1 giờ trước', 
-      statusText: 'Cần người', 
-      title: 'Gom kèo Pickleball chiều nay', 
-      desc: 'Cần tuyển 1 hoặc 2 vợt chơi cùng sân Tuyên Sơn, trình độ trung bình yếu đến trung bình.', 
-      location: 'Sân Tuyên Sơn Pickleball', 
-      schedule: '17:00 - 19:00', 
-      level: 'DUPR 3.0 - 3.5',
-      fee: '50.000 VNĐ / người',
-      slots: 'Còn 1 slot'
-    }
+      id: 4,
+      type: 'match',
+      sport: 'badminton',
+      sportLabel: 'Cầu lông',
+      authorName: 'Mai Sương',
+      authorAvatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCWDtjwj9EYv3ovmCldYzVCLFcIiLRDFJfF49m87F-SUWiD5lWCmwUSGIsLuvnfjagqC6xAGPTTXlcI4dF8gAYkVRfkU6j0QOx1oMP5w__xAIKDhdRyJV4Sjk9nuPopUKOzs2NqE8tHe-zZdqG5vi0vgayjKkF0zEQCLa4kOuS73n0CB2OLRUMBhbWtH9eJXndpZrJaXpZaH_phmMYOLr2UNbn5_R24Wq7ekswtAuM_XQN0NI87DHBBXA',
+      postedTime: 'Đăng 1 giờ trước',
+      statusText: 'Cần người',
+      title: 'Kèo Cầu lông vãng lai',
+      desc: 'TUYỂN VL Nam Nữ Sáng Nay (30/6)\n⏰ 9h - 11h\n🎪 Sân Lâm Gia 17 bầu năng 11\n🔥 Tb- , Tby\n🪎 Nam 50k Nữ 45K\nIb m ạ',
+      location: 'Sân Lâm Gia 17 Bầu Năng 11',
+      schedule: '09:00 - 11:00',
+      level: 'TB Yếu - TB',
+      fee: '47.500 VNĐ / người',
+      slots: 'Còn 3 slot',
+      fbLink: 'https://www.facebook.com/groups/300385366290013/posts/1012999208361955/',
+    },
   ];
 
   const names = ['Hoàng Minh', 'Lê Hữu', 'Phạm Tuấn', 'Vũ Ngọc', 'Bùi Xuân', 'Đặng Thùy', 'Ngô Kiến', 'Đỗ Duy'];
@@ -119,42 +124,44 @@ const generateMockPosts = () => {
 
     if (isTournament) {
       posts.push({
-        id: i, 
-        type: 'tournament', 
+        id: i,
+        type: 'tournament',
         sport: isPickleball ? 'pickleball' : 'badminton',
         sportLabel: isPickleball ? 'Pickleball' : 'Cầu lông',
-        authorName: 'CLB ' + name, 
+        authorName: 'CLB ' + name,
         authorAvatar: 'https://ui-avatars.com/api/?name=CLB&background=e2e8f0&color=475569',
-        coverImage: isPickleball 
+        coverImage: isPickleball
           ? 'https://images.unsplash.com/photo-1611566144960-4f7b1376a591?auto=format&fit=crop&q=80&w=500&h=250'
           : 'https://images.unsplash.com/photo-1560012206-a88b5113d5b7?auto=format&fit=crop&q=80&w=500&h=250',
-        postedTime: `Đăng ${i % 5 + 1} giờ trước`, 
-        statusText: 'Đang mở', 
-        title: titles[Math.floor(Math.random() * titles.length)], 
-        desc: 'Một giải đấu đầy kịch tính đang chờ đón các vận động viên đăng ký tham gia cọ xát và giành những phần quà hấp dẫn.', 
-        location: court, 
-        dateStr: '15/07/2026', 
-        fee: '200.000 VNĐ / người'
+        postedTime: `Đăng ${i % 5 + 1} giờ trước`,
+        statusText: 'Đang mở',
+        title: titles[Math.floor(Math.random() * titles.length)],
+        desc: 'Một giải đấu đầy kịch tính đang chờ đón các vận động viên đăng ký tham gia cọ xát và giành những phần quà hấp dẫn.',
+        location: court,
+        dateStr: '15/07/2026',
+        fee: '200.000 VNĐ / người',
+        limit: 32
       });
     } else {
       posts.push({
-        id: i, 
-        type: 'match', 
+        id: i,
+        type: 'match',
         sport: isPickleball ? 'pickleball' : 'badminton',
         sportLabel: isPickleball ? 'Pickleball' : 'Cầu lông',
-        authorName: name, 
+        authorName: name,
         authorAvatar: `https://ui-avatars.com/api/?name=${name.replace(' ', '+')}&background=e8f0fe&color=1a73e8`,
-        postedTime: `Đăng ${i % 5 + 1} giờ trước`, 
-        statusText: 'Cần người', 
-        title: isPickleball ? 'Kèo Pickleball tối nay' : 'Kèo Cầu lông vãng lai', 
-        desc: 'Thiếu người chơi vãng lai vui vẻ hòa đồng. Sân đẹp, bóng/cầu cung cấp sẵn, chỉ cần xách vợt đến chơi.', 
-        location: court, 
+        postedTime: `Đăng ${i % 5 + 1} giờ trước`,
+        statusText: 'Cần người',
+        title: isPickleball ? 'Kèo Pickleball tối nay' : 'Kèo Cầu lông vãng lai',
+        desc: 'Thiếu người chơi vãng lai vui vẻ hòa đồng. Sân đẹp, bóng/cầu cung cấp sẵn, chỉ cần xách vợt đến chơi.',
+        location: court,
         schedule: '18:00 - 20:00',
-        level: isPickleball 
+        level: isPickleball
           ? ['DUPR 2.0 - 2.5', 'DUPR 3.0 - 3.5', 'DUPR 4.0 - 4.5', 'DUPR 5.0+'][Math.floor(Math.random() * 4)]
-          : ['Yếu - TB Yếu', 'Trung bình', 'Khá - Giỏi'][Math.floor(Math.random() * 3)], 
+          : ['Yếu - TB Yếu', 'Trung bình', 'Khá - Giỏi'][Math.floor(Math.random() * 3)],
         fee: '45.000 VNĐ / người',
-        slots: 'Còn 2 slot'
+        slots: 'Còn 2 slot',
+        fbLink: 'https://www.facebook.com/groups/danangbadminton/posts/37195001866764864/',
       });
     }
   }
@@ -164,27 +171,129 @@ const generateMockPosts = () => {
 
 const MOCK_POSTS = generateMockPosts();
 
+// Helper to map court locations to districts in Da Nang
+const getDistrictFromLocation = (location: string): string => {
+  const locLower = location.toLowerCase();
+  if (locLower.includes('hải châu')) return 'Hải Châu';
+  if (locLower.includes('thanh khê') || locLower.includes('kỳ đồng') || locLower.includes('bế văn đàn')) return 'Thanh Khê';
+  if (locLower.includes('liên chiểu') || locLower.includes('lâm gia') || locLower.includes('bầu năng')) return 'Liên Chiểu';
+  if (locLower.includes('ngũ hành sơn')) return 'Ngũ Hành Sơn';
+  if (locLower.includes('sơn trà') || locLower.includes('pinpon') || locLower.includes('an đồn')) return 'Sơn Trà';
+  if (locLower.includes('cẩm lệ') || locLower.includes('hoà xuân')) return 'Cẩm Lệ';
+  if (locLower.includes('tiên sơn')) return 'Hải Châu';
+  if (locLower.includes('tuyên sơn') || locLower.includes('tuyến sơn')) return 'Hải Châu';
+  return '';
+};
+
+// Helper to match post level with selected filter level
+const matchLevel = (postLevel: string | undefined, selectedLevel: string): boolean => {
+  if (!selectedLevel) return true;
+  if (!postLevel) return true;
+  const pl = postLevel.toLowerCase();
+  const sel = selectedLevel.toLowerCase();
+  return pl.includes(sel);
+};
+
+// Helper to parse date from post
+const getPostDate = (post: any): Date | null => {
+  if (post.dateStr) {
+    const parts = post.dateStr.split('/');
+    if (parts.length === 3) {
+      const d = parseInt(parts[0], 10);
+      const m = parseInt(parts[1], 10) - 1;
+      const y = parseInt(parts[2], 10);
+      return new Date(y, m, d);
+    }
+  }
+  if (post.desc) {
+    const match = post.desc.match(/(\d{1,2})\/(\d{1,2})/);
+    if (match) {
+      const d = parseInt(match[1], 10);
+      const m = parseInt(match[2], 10) - 1;
+      const y = new Date().getFullYear();
+      return new Date(y, m, d);
+    }
+  }
+  return null;
+};
+
+// Helper to parse time from schedule string (e.g., "08:30 - 10:30")
+const getPostTimeRange = (post: any): { start: string; end: string } | null => {
+  if (post.schedule) {
+    const parts = post.schedule.split('-');
+    if (parts.length === 2) {
+      return { start: parts[0].trim(), end: parts[1].trim() };
+    }
+  }
+  return null;
+};
+
 export default function TournamentsPage() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const query = searchParams.get('q') || '';
   const courtQuery = searchParams.get('court') || '';
-  
+
+  // Posts from localStorage (synced)
+  const [posts, setPosts] = useState<any[]>(() => {
+    const savedTournaments = localStorage.getItem('courtmate_tournaments');
+    if (savedTournaments) {
+      return JSON.parse(savedTournaments);
+    } else {
+      localStorage.setItem('courtmate_tournaments', JSON.stringify(MOCK_POSTS));
+      return MOCK_POSTS;
+    }
+  });
+
+  const [registrations, setRegistrations] = useState<any[]>(() => {
+    const saved = localStorage.getItem('courtmate_registrations');
+    return saved ? JSON.parse(saved) : [];
+  });
+
+  // Sync state with localStorage updates
+  useEffect(() => {
+    let lastTournamentsString = localStorage.getItem('courtmate_tournaments') || '';
+    let lastRegistrationsString = localStorage.getItem('courtmate_registrations') || '';
+
+    const handleStorageChange = () => {
+      const savedTournaments = localStorage.getItem('courtmate_tournaments');
+      if (savedTournaments && savedTournaments !== lastTournamentsString) {
+        lastTournamentsString = savedTournaments;
+        setPosts(JSON.parse(savedTournaments));
+      }
+      const savedRegistrations = localStorage.getItem('courtmate_registrations');
+      if (savedRegistrations && savedRegistrations !== lastRegistrationsString) {
+        lastRegistrationsString = savedRegistrations;
+        setRegistrations(JSON.parse(savedRegistrations));
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    const interval = setInterval(handleStorageChange, 1000);
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      clearInterval(interval);
+    };
+  }, []);
+
   // Custom Dropdown Open States
   const [openDropdown, setOpenDropdown] = useState<'court' | 'level' | null>(null);
 
-  // Modal State for Match Details
+  // Modal State
   const [selectedPost, setSelectedPost] = useState<any>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // Carousel Active Slide State
+  // Carousel State
   const [activeSlide, setActiveSlide] = useState(0);
 
   // Filter States
   const [level, setLevel] = useState('');
   const [sportFilter, setSportFilter] = useState('');
+  const [district, setDistrict] = useState('');
   const [dateRange, setDateRange] = useState<[Date | null, Date | null]>([null, null]);
   const [startDate, endDate] = dateRange;
+  const [startTime, setStartTime] = useState('');
+  const [endTime, setEndTime] = useState('');
   const [showDatePicker, setShowDatePicker] = useState(false);
 
   // Infinity Scroll state
@@ -196,7 +305,7 @@ export default function TournamentsPage() {
   let greeting = 'Chào buổi tối';
   if (currentHour >= 5 && currentHour < 12) greeting = 'Chào buổi sáng';
   else if (currentHour >= 12 && currentHour < 18) greeting = 'Chào buổi chiều';
-  
+
   const { userName } = useAuth();
 
   // Auto-run slide timer
@@ -211,6 +320,7 @@ export default function TournamentsPage() {
   useEffect(() => {
     const handleClose = () => {
       setOpenDropdown(null);
+      setShowDatePicker(false);
     };
     window.addEventListener('click', handleClose);
     return () => window.removeEventListener('click', handleClose);
@@ -233,7 +343,7 @@ export default function TournamentsPage() {
 
   const handleSportFilterChange = (sport: string) => {
     setSportFilter(sport);
-    setLevel(''); // Reset level when changing sports to prevent mismatching filters
+    setLevel(''); // Reset level when changing sports
   };
 
   const handleQuickTagClick = (action: string) => {
@@ -271,47 +381,9 @@ export default function TournamentsPage() {
     return false;
   };
 
-  const filteredPosts = MOCK_POSTS.filter(post => {
-    let matches = true;
-    if (query) {
-      const searchStr = query.toLowerCase();
-      matches = (
-        post.authorName.toLowerCase().includes(searchStr) ||
-        post.title.toLowerCase().includes(searchStr) ||
-        post.desc.toLowerCase().includes(searchStr) ||
-        post.location.toLowerCase().includes(searchStr)
-      );
-    }
-    if (courtQuery) {
-      matches = matches && post.location.toLowerCase().includes(courtQuery.toLowerCase());
-    }
-    if (sportFilter) {
-      matches = matches && post.sport === sportFilter;
-    }
-    if (level) {
-      if (post.type === 'match') {
-        matches = matches && post.level.toLowerCase().includes(level.toLowerCase());
-      }
-    }
-    return matches;
-  });
-
-  const displayedPosts = filteredPosts.slice(0, displayCount);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      entries => {
-        if (entries[0].isIntersecting) {
-          setDisplayCount(prev => Math.min(prev + 8, filteredPosts.length));
-        }
-      },
-      { threshold: 0.1 }
-    );
-    if (observerTarget.current) {
-      observer.observe(observerTarget.current);
-    }
-    return () => observer.disconnect();
-  }, [filteredPosts.length]);
+  const getRegCount = (postId: number) => {
+    return registrations.filter((r: any) => r.tournamentId === postId).length;
+  };
 
   // Dynamic Level Options based on Sport selected
   const getLevelOptions = () => {
@@ -332,7 +404,6 @@ export default function TournamentsPage() {
         { label: 'DUPR 5.0+ (Chuyên nghiệp)', value: '5.0', group: 'all' }
       ];
     }
-    // Combined / grouped options when "Tất cả" is selected
     return [
       { label: 'Tất cả trình độ', value: '', group: 'all' },
       { label: 'Cầu lông: Yếu - TB Yếu', value: 'yếu', group: 'Cầu lông' },
@@ -357,16 +428,110 @@ export default function TournamentsPage() {
       if (level === '4.0') return 'DUPR 4.0 - 4.5';
       if (level === '5.0') return 'DUPR 5.0+';
     }
-    // Combined / fallback label checks
-    if (level === 'yêu') return 'Cầu lông: Yếu - TB Yếu';
+    if (level === 'yếu') return 'Cầu lông: Yếu - TB Yếu';
     if (level === 'trung bình') return 'Cầu lông: Trung bình';
     if (level === 'khá') return 'Cầu lông: Khá - Giỏi';
     if (level === '2.0') return 'Pickleball: DUPR 2.0-2.5';
     if (level === '3.0') return 'Pickleball: DUPR 3.0-3.5';
     if (level === '4.0') return 'Pickleball: DUPR 4.0-4.5';
     if (level === '5.0') return 'Pickleball: DUPR 5.0+';
-    
     return 'Tất cả trình độ';
+  };
+
+  const filteredPosts = posts.filter(post => {
+    let matches = true;
+
+    // 1. Search query filter
+    if (query) {
+      const searchStr = query.toLowerCase();
+      matches =
+        post.authorName.toLowerCase().includes(searchStr) ||
+        (post.title && post.title.toLowerCase().includes(searchStr)) ||
+        post.desc.toLowerCase().includes(searchStr) ||
+        post.location.toLowerCase().includes(searchStr) ||
+        (post.statusText && post.statusText.toLowerCase().includes(searchStr));
+    }
+
+    // 2. Court filter
+    if (courtQuery) {
+      matches = matches && post.location.toLowerCase().includes(courtQuery.toLowerCase());
+    }
+
+    // 3. Sport filter
+    if (sportFilter) {
+      matches = matches && post.sport === sportFilter;
+    }
+
+    // 4. District filter
+    if (district) {
+      const postDistrict = getDistrictFromLocation(post.location);
+      matches = matches && postDistrict === district;
+    }
+
+    // 5. Level filter
+    if (level) {
+      if (post.type === 'match') {
+        matches = matches && matchLevel(post.level, level);
+      }
+    }
+
+    // 6. Date Range filter
+    if (startDate) {
+      const postDate = getPostDate(post);
+      if (postDate) {
+        const sDate = new Date(startDate);
+        sDate.setHours(0, 0, 0, 0);
+        postDate.setHours(0, 0, 0, 0);
+        matches = matches && postDate >= sDate;
+      }
+    }
+    if (endDate) {
+      const postDate = getPostDate(post);
+      if (postDate) {
+        const eDate = new Date(endDate);
+        eDate.setHours(23, 59, 59, 999);
+        postDate.setHours(0, 0, 0, 0);
+        matches = matches && postDate <= eDate;
+      }
+    }
+
+    // 7. Time filter
+    const timeRange = getPostTimeRange(post);
+    if (timeRange) {
+      if (startTime) matches = matches && timeRange.start >= startTime;
+      if (endTime) matches = matches && timeRange.end <= endTime;
+    }
+
+    return matches;
+  });
+
+  const displayedPosts = filteredPosts.slice(0, displayCount);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          setDisplayCount(prev => Math.min(prev + 8, filteredPosts.length));
+        }
+      },
+      { threshold: 0.1 }
+    );
+    if (observerTarget.current) observer.observe(observerTarget.current);
+    return () => observer.disconnect();
+  }, [filteredPosts.length]);
+
+  const hasActiveFilters =
+    query !== '' || courtQuery !== '' || sportFilter !== '' || district !== '' ||
+    level !== '' || startDate !== null || endDate !== null || startTime !== '' || endTime !== '';
+
+  const handleClearFilters = () => {
+    setSearchParams(new URLSearchParams());
+    setSportFilter('');
+    setDistrict('');
+    setLevel('');
+    setDateRange([null, null]);
+    setStartTime('');
+    setEndTime('');
   };
 
   return (
@@ -379,26 +544,23 @@ export default function TournamentsPage() {
         <p className="text-on-surface-variant font-body-md text-body-md">Tìm kiếm giải đấu và tham gia các kèo đấu thể thao quanh bạn.</p>
       </header>
 
-      {/* Hero Carousel Banner (Using robust CSS backgrounds to avoid overlapping browser alt texts) */}
+      {/* Hero Carousel Banner */}
       <div className="relative rounded-3xl overflow-hidden shadow-lg border border-outline-variant/30 h-[200px] md:h-[280px] mb-lg bg-[#111b21] group/carousel">
         {CAROUSEL_SLIDES.map((slide, idx) => (
-          <div 
+          <div
             key={slide.id}
             className={`absolute inset-0 transition-all duration-1000 ease-in-out ${
               idx === activeSlide ? 'opacity-100 z-10 visible' : 'opacity-0 z-0 invisible pointer-events-none'
             }`}
           >
             {/* Background Image Layer */}
-            <div 
+            <div
               className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-transform duration-[8000ms] ease-out scale-105 group-hover/carousel:scale-100"
-              style={{ 
-                backgroundImage: `url(${slide.image})`,
-                backgroundColor: '#111b21'
-              }}
+              style={{ backgroundImage: `url(${slide.image})`, backgroundColor: '#111b21' }}
             />
             {/* Gradient Overlay Layer */}
             <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/50 to-transparent z-10" />
-            
+
             {/* Content Layer */}
             <div className="absolute inset-0 flex flex-col justify-center p-md md:p-xl text-white max-w-xl z-20">
               <span className="text-[10px] md:text-xs font-bold text-primary-fixed-dim tracking-widest uppercase mb-1">
@@ -410,7 +572,7 @@ export default function TournamentsPage() {
               <p className="text-[11px] md:text-sm text-gray-300 line-clamp-2 mb-4">
                 {slide.description}
               </p>
-              <button 
+              <button
                 onClick={() => navigate(slide.link)}
                 className="w-max bg-primary text-on-primary px-5 py-2.5 rounded-xl font-label-md text-sm hover:opacity-90 active:scale-95 transition-all shadow-md shadow-primary/20 flex items-center gap-1"
               >
@@ -419,15 +581,15 @@ export default function TournamentsPage() {
             </div>
           </div>
         ))}
-        
-        {/* Indicators */}
-        <div className="absolute bottom-3 right-4 z-25 flex gap-2">
+
+        {/* Slide Indicators */}
+        <div className="absolute bottom-3 right-4 z-30 flex gap-2">
           {CAROUSEL_SLIDES.map((_, idx) => (
-            <button 
+            <button
               key={idx}
               onClick={() => setActiveSlide(idx)}
-              className={`w-2.5 h-2.5 rounded-full transition-all ${
-                idx === activeSlide ? 'bg-primary scale-110 w-6' : 'bg-white/50 hover:bg-white'
+              className={`h-2.5 rounded-full transition-all ${
+                idx === activeSlide ? 'bg-primary scale-110 w-6' : 'bg-white/50 hover:bg-white w-2.5'
               }`}
             />
           ))}
@@ -437,57 +599,51 @@ export default function TournamentsPage() {
       {/* Horizontal Filter Bar with relative and z-30 stack index */}
       <div className="relative z-30 bg-white/80 backdrop-blur-md border border-outline-variant/30 shadow-md rounded-3xl p-md mb-md flex flex-col gap-md">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-sm items-center w-full">
-          {/* Ô Tìm Kiếm - Synced with Header Search */}
+          {/* Ô Tìm Kiếm */}
           <div className="relative lg:col-span-3">
             <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">
               search
             </span>
-            <input 
-              type="text" 
-              placeholder="Tìm giải đấu, kèo..." 
+            <input
+              type="text"
+              placeholder="Tìm giải đấu, kèo..."
               value={query}
               onChange={handleSearchChange}
               className="w-full pl-10 pr-4 py-2.5 bg-surface-container-low border border-outline-variant rounded-2xl font-body-sm text-on-surface outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
             />
           </div>
 
-          {/* Lọc Môn Thể Thao - Premium Segmented Control / Tab control */}
+          {/* Lọc Môn Thể Thao */}
           <div className="flex bg-surface-container-low p-1 rounded-2xl border border-outline-variant/50 lg:col-span-3">
-            <button 
+            <button
               onClick={() => handleSportFilterChange('')}
               className={`flex-1 py-2 px-3 rounded-xl font-label-md text-xs font-semibold transition-all ${
-                sportFilter === '' 
-                  ? 'bg-primary text-on-primary shadow-sm' 
-                  : 'text-on-surface-variant hover:text-primary'
+                sportFilter === '' ? 'bg-primary text-on-primary shadow-sm' : 'text-on-surface-variant hover:text-primary'
               }`}
             >
               Tất cả
             </button>
-            <button 
+            <button
               onClick={() => handleSportFilterChange('badminton')}
               className={`flex-1 py-2 px-3 rounded-xl font-label-md text-xs font-semibold transition-all flex items-center justify-center gap-1 ${
-                sportFilter === 'badminton' 
-                  ? 'bg-primary text-on-primary shadow-sm' 
-                  : 'text-on-surface-variant hover:text-primary'
+                sportFilter === 'badminton' ? 'bg-primary text-on-primary shadow-sm' : 'text-on-surface-variant hover:text-primary'
               }`}
             >
               🏸 Cầu lông
             </button>
-            <button 
+            <button
               onClick={() => handleSportFilterChange('pickleball')}
               className={`flex-1 py-2 px-3 rounded-xl font-label-md text-xs font-semibold transition-all flex items-center justify-center gap-1 ${
-                sportFilter === 'pickleball' 
-                  ? 'bg-primary text-on-primary shadow-sm' 
-                  : 'text-on-surface-variant hover:text-primary'
+                sportFilter === 'pickleball' ? 'bg-primary text-on-primary shadow-sm' : 'text-on-surface-variant hover:text-primary'
               }`}
             >
               🏓 Pickleball
             </button>
           </div>
 
-          {/* Lọc Sân - Custom dropdown with location icon */}
+          {/* Lọc Sân */}
           <div className="relative lg:col-span-2">
-            <button 
+            <button
               onClick={(e) => {
                 e.stopPropagation();
                 setOpenDropdown(openDropdown === 'court' ? null : 'court');
@@ -504,27 +660,17 @@ export default function TournamentsPage() {
 
             {openDropdown === 'court' && (
               <div className="absolute left-0 top-full mt-2 w-[240px] z-50 bg-white border border-outline-variant shadow-xl rounded-2xl p-1.5 flex flex-col gap-0.5 max-h-[250px] overflow-y-auto custom-scrollbar animate-fade-in-up" onClick={e => e.stopPropagation()}>
-                <button 
-                  onClick={() => {
-                    handleCourtChange('');
-                    setOpenDropdown(null);
-                  }}
-                  className={`w-full text-left px-3 py-2 rounded-xl text-body-sm hover:bg-surface-container-low transition-colors ${
-                    !courtQuery ? 'bg-primary/5 text-primary font-semibold' : 'text-on-surface'
-                  }`}
+                <button
+                  onClick={() => { handleCourtChange(''); setOpenDropdown(null); }}
+                  className={`w-full text-left px-3 py-2 rounded-xl text-body-sm hover:bg-surface-container-low transition-colors ${!courtQuery ? 'bg-primary/5 text-primary font-semibold' : 'text-on-surface'}`}
                 >
                   Tất cả các sân
                 </button>
                 {COURTS.map(c => (
-                  <button 
+                  <button
                     key={c}
-                    onClick={() => {
-                      handleCourtChange(c);
-                      setOpenDropdown(null);
-                    }}
-                    className={`w-full text-left px-3 py-2 rounded-xl text-body-sm hover:bg-surface-container-low transition-colors ${
-                      courtQuery === c ? 'bg-primary/5 text-primary font-semibold' : 'text-on-surface'
-                    }`}
+                    onClick={() => { handleCourtChange(c); setOpenDropdown(null); }}
+                    className={`w-full text-left px-3 py-2 rounded-xl text-body-sm hover:bg-surface-container-low transition-colors ${courtQuery === c ? 'bg-primary/5 text-primary font-semibold' : 'text-on-surface'}`}
                   >
                     {c}
                   </button>
@@ -533,9 +679,9 @@ export default function TournamentsPage() {
             )}
           </div>
 
-          {/* Lọc Trình Độ - Custom Dynamic levels dropdown based on Sport Filter */}
+          {/* Lọc Trình Độ */}
           <div className="relative lg:col-span-2">
-            <button 
+            <button
               onClick={(e) => {
                 e.stopPropagation();
                 setOpenDropdown(openDropdown === 'level' ? null : 'level');
@@ -545,9 +691,7 @@ export default function TournamentsPage() {
             >
               <span className="flex items-center gap-2 truncate">
                 <span className="material-symbols-outlined text-[18px] text-primary">military_tech</span>
-                <span className="truncate font-semibold text-on-surface">
-                  {getLevelButtonLabel()}
-                </span>
+                <span className="truncate font-semibold text-on-surface">{getLevelButtonLabel()}</span>
               </span>
               <span className="material-symbols-outlined text-[18px] text-on-surface-variant">expand_more</span>
             </button>
@@ -555,7 +699,8 @@ export default function TournamentsPage() {
             {openDropdown === 'level' && (
               <div className="absolute left-0 top-full mt-2 w-[240px] z-50 bg-white border border-outline-variant shadow-xl rounded-2xl p-1.5 flex flex-col gap-0.5 max-h-[320px] overflow-y-auto custom-scrollbar animate-fade-in-up" onClick={e => e.stopPropagation()}>
                 {getLevelOptions().map((item, idx) => {
-                  const showHeader = idx === 0 || getLevelOptions()[idx - 1].group !== item.group;
+                  const options = getLevelOptions();
+                  const showHeader = idx === 0 || options[idx - 1].group !== item.group;
                   return (
                     <React.Fragment key={idx}>
                       {showHeader && item.group && item.group !== 'all' && (
@@ -563,14 +708,9 @@ export default function TournamentsPage() {
                           {item.group}
                         </div>
                       )}
-                      <button 
-                        onClick={() => {
-                          setLevel(item.value);
-                          setOpenDropdown(null);
-                        }}
-                        className={`w-full text-left px-3 py-2 rounded-xl text-body-sm hover:bg-surface-container-low transition-colors ${
-                          level === item.value ? 'bg-primary/5 text-primary font-semibold' : 'text-on-surface'
-                        }`}
+                      <button
+                        onClick={() => { setLevel(item.value); setOpenDropdown(null); }}
+                        className={`w-full text-left px-3 py-2 rounded-xl text-body-sm hover:bg-surface-container-low transition-colors ${level === item.value ? 'bg-primary/5 text-primary font-semibold' : 'text-on-surface'}`}
                       >
                         {item.label}
                       </button>
@@ -581,9 +721,9 @@ export default function TournamentsPage() {
             )}
           </div>
 
-          {/* Bộ chọn Ngày/Giờ */}
+          {/* Bộ chọn Ngày */}
           <div className="relative lg:col-span-2">
-            <button 
+            <button
               onClick={(e) => {
                 e.stopPropagation();
                 setShowDatePicker(!showDatePicker);
@@ -609,7 +749,7 @@ export default function TournamentsPage() {
                   onChange={(update) => setDateRange(update)}
                   inline
                 />
-                <button 
+                <button
                   onClick={() => setShowDatePicker(false)}
                   className="w-full py-2 mt-2 bg-primary text-on-primary rounded-xl font-label-md hover:opacity-90 text-sm shadow-md"
                 >
@@ -619,9 +759,22 @@ export default function TournamentsPage() {
             )}
           </div>
         </div>
+
+        {/* Clear filters row */}
+        {hasActiveFilters && (
+          <div className="flex justify-end">
+            <button
+              onClick={handleClearFilters}
+              className="px-4 py-1.5 bg-error-container text-on-error-container border border-error/30 rounded-xl font-label-md text-sm hover:bg-error/10 transition-colors active:scale-95 flex items-center gap-1"
+            >
+              <span className="material-symbols-outlined text-[16px]">filter_alt_off</span>
+              Xóa bộ lọc
+            </button>
+          </div>
+        )}
       </div>
 
-      {/* Quick Search Tags with active state highlights */}
+      {/* Quick Search Tags */}
       <div className="flex flex-wrap gap-2 mb-xl items-center px-1">
         <span className="text-[11px] font-bold text-on-surface-variant/80 uppercase tracking-wider mr-2">Gợi ý lọc:</span>
         {QUICK_TAGS.map((tag, idx) => {
@@ -631,8 +784,8 @@ export default function TournamentsPage() {
               key={idx}
               onClick={() => handleQuickTagClick(tag.action)}
               className={`px-3.5 py-1.5 rounded-full border text-xs font-semibold transition-all shadow-sm active:scale-95 ${
-                isActive 
-                  ? 'bg-primary text-on-primary border-primary' 
+                isActive
+                  ? 'bg-primary text-on-primary border-primary'
                   : 'bg-white/60 border-outline-variant/30 text-on-surface-variant hover:border-primary hover:text-primary hover:bg-primary/5'
               }`}
             >
@@ -642,7 +795,7 @@ export default function TournamentsPage() {
         })}
       </div>
 
-      {/* Grid bài đăng chính (Nâng cấp thành 4 cột grid) */}
+      {/* Grid bài đăng chính */}
       <section className="flex flex-col gap-md">
         <div className="flex justify-between items-center mb-sm">
           <h2 className="font-headline-md text-headline-md font-bold text-on-background flex items-center gap-2">
@@ -652,13 +805,12 @@ export default function TournamentsPage() {
           <span className="text-sm font-semibold text-on-surface-variant">{filteredPosts.length} kết quả</span>
         </div>
 
-        {/* Lưới card hiển thị */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-md">
           {displayedPosts.map((post, idx) => {
             const isTournament = post.type === 'tournament';
-            
+
             return (
-              <div 
+              <div
                 key={post.id}
                 onClick={() => {
                   if (isTournament) {
@@ -675,12 +827,12 @@ export default function TournamentsPage() {
                 {isTournament ? (
                   <>
                     <div className="relative h-[160px] w-full overflow-hidden bg-gradient-to-br from-primary/10 to-primary/5">
-                      <img 
-                        src={post.coverImage} 
-                        alt={post.title} 
+                      <img
+                        src={post.coverImage}
+                        alt={post.title}
                         onError={(e) => {
                           e.currentTarget.onerror = null;
-                          e.currentTarget.style.opacity = '0'; // Hide broken image completely to show the fallback gradient
+                          e.currentTarget.style.opacity = '0';
                         }}
                         className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
                       />
@@ -694,7 +846,7 @@ export default function TournamentsPage() {
                         {post.statusText}
                       </span>
                     </div>
-                    
+
                     <div className="p-md flex flex-col flex-1 gap-xs">
                       <div className="flex items-center gap-2 mb-1">
                         <img src={post.authorAvatar} alt="" className="w-5 h-5 rounded-full object-cover border border-outline-variant/30" />
@@ -706,7 +858,7 @@ export default function TournamentsPage() {
                       <p className="font-body-sm text-[12px] text-on-surface-variant line-clamp-2 mb-2">
                         {post.desc}
                       </p>
-                      
+
                       <div className="mt-auto space-y-1.5 bg-surface-container-lowest p-3 rounded-2xl border border-outline-variant/20">
                         <div className="flex items-center gap-2 text-on-surface text-[12px]">
                           <span className="material-symbols-outlined text-[16px] text-primary">location_on</span>
@@ -720,6 +872,10 @@ export default function TournamentsPage() {
                           <span className="material-symbols-outlined text-[16px] text-primary">payments</span>
                           <span>{post.fee}</span>
                         </div>
+                        <div className="flex items-center gap-2 text-on-surface text-[12px] font-semibold text-primary">
+                          <span className="material-symbols-outlined text-[16px] text-primary">groups</span>
+                          <span>{getRegCount(post.id)}/{post.limit || 32} VĐV đã đăng ký</span>
+                        </div>
                       </div>
 
                       <button className="w-full mt-3 py-2 bg-primary text-on-primary rounded-xl font-label-md text-sm hover:opacity-95 shadow-sm active:scale-95 transition-all">
@@ -728,10 +884,9 @@ export default function TournamentsPage() {
                     </div>
                   </>
                 ) : (
-                  /* 2. THẺ KÈO ĐẤU (GỌN GÀNG, TẬP TRUNG THÔNG TIN THỰC TẾ) */
+                  /* 2. THẺ KÈO ĐẤU */
                   <div className="p-md flex flex-col flex-1 gap-xs justify-between">
                     <div>
-                      {/* Avatar, Tag, status */}
                       <div className="flex justify-between items-start mb-2">
                         <div className="flex items-center gap-2">
                           <img src={post.authorAvatar} alt="" className="w-9 h-9 rounded-full object-cover border border-outline-variant/30" />
@@ -801,7 +956,7 @@ export default function TournamentsPage() {
               <p>Không tìm thấy kết quả nào cho tiêu chí của bạn</p>
             </div>
           )}
-          
+
           {/* Infinity Scroll Target */}
           {displayCount < filteredPosts.length && (
             <div ref={observerTarget} className="col-span-full py-4 text-center">
@@ -811,11 +966,16 @@ export default function TournamentsPage() {
         </div>
       </section>
 
-      {/* Match Details Modal */}
-      <MatchDetailsModal 
-        isOpen={isModalOpen} 
-        onClose={() => setIsModalOpen(false)} 
-        post={selectedPost} 
+      {/* Modals - Combined from both branches */}
+      <TournamentDetailsModal
+        isOpen={isModalOpen && selectedPost?.type === 'tournament'}
+        onClose={() => setIsModalOpen(false)}
+        post={selectedPost}
+      />
+      <MatchDetailsModal
+        isOpen={isModalOpen && selectedPost?.type === 'match'}
+        onClose={() => setIsModalOpen(false)}
+        post={selectedPost}
       />
     </main>
   );

@@ -61,8 +61,8 @@ export default function HostAdminLayout({ children }: { children: React.ReactNod
               Bảng điều khiển
             </Link>
           )}
-          <Link to="/tournaments" className={navItemClass('/tournaments')}>
-            <span className="material-symbols-outlined" style={{ fontVariationSettings: isActive('/tournaments') ? "'FILL' 1" : "'FILL' 0" }}>emoji_events</span>
+          <Link to="/host/tournaments" className={navItemClass('/host/tournaments')}>
+            <span className="material-symbols-outlined" style={{ fontVariationSettings: isActive('/host/tournaments') ? "'FILL' 1" : "'FILL' 0" }}>emoji_events</span>
             {isHostOrAdmin ? 'Giải đấu của tôi' : 'Danh sách giải đấu'}
           </Link>
           {isHostOrAdmin && (
