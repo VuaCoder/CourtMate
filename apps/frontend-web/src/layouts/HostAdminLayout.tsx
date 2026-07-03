@@ -8,6 +8,24 @@ export default function HostAdminLayout({ children }: { children: React.ReactNod
   const { role, logout } = useAuth();
   const navigate = useNavigate();
 
+  const [greeting, setGreeting] = React.useState(() => {
+    const currentHour = new Date().getHours();
+    if (currentHour >= 5 && currentHour < 12) return "Chào buổi sáng";
+    if (currentHour >= 12 && currentHour < 18) return "Chào buổi chiều";
+    return "Chào buổi tối";
+  });
+
+  React.useEffect(() => {
+    const interval = setInterval(() => {
+      const currentHour = new Date().getHours();
+      let nextGreeting = "Chào buổi tối";
+      if (currentHour >= 5 && currentHour < 12) nextGreeting = "Chào buổi sáng";
+      else if (currentHour >= 12 && currentHour < 18) nextGreeting = "Chào buổi chiều";
+      setGreeting(nextGreeting);
+    }, 60000); // Check every minute
+    return () => clearInterval(interval);
+  }, []);
+
   const handleLogout = () => {
     logout();
     navigate('/');
@@ -24,7 +42,6 @@ export default function HostAdminLayout({ children }: { children: React.ReactNod
     return "flex items-center gap-3 px-3 py-2 text-on-surface-variant dark:text-surface-variant hover:bg-surface-variant dark:hover:bg-tertiary-container/30 rounded-lg font-body-md text-body-md hover:translate-x-1 transition-all duration-200 active:scale-98";
   };
 
-  const portalName = role === 'admin' ? 'Cổng Quản Trị' : role === 'host' ? 'Cổng Chủ Sự Kiện' : 'Cổng Người Dùng';
   const isHostOrAdmin = role === 'host' || role === 'admin';
 
   return (
@@ -38,10 +55,10 @@ export default function HostAdminLayout({ children }: { children: React.ReactNod
         <div className="flex items-center gap-3 mb-xl">
           <img alt="Organizer Logo" className="w-10 h-10 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBMMRdajFHhmTmFlRawiyunFf8QFvhUXa3_uvUZCAIU2fC0CZG9LaTh84tl9XUBs5dyJ1kGI7m-Ic_BqZXYsRSEqClJym8eiNnqf3o9tVREH6booK7FNudG4BG1ajuQydvbKwKYedk3lJe2Wm6iSj7JfjN84g6buX4u0AjEjdCNx8KBxu07ZpPNOG7vju1NrVKaY3gBl6cuqNQU9bqFoZquQfZ5olar26hHnX-pxljmMklIwZdly1ry3g" />
           <div>
-            <h2 className="font-title-lg text-title-lg font-bold text-on-surface dark:text-inverse-on-surface">
-              {portalName}
+            <h2 className="font-title-lg text-[16px] leading-[24px] font-bold text-on-surface dark:text-inverse-on-surface">
+              {greeting}!
             </h2>
-            <p className="font-label-md text-label-md text-on-surface-variant">CLB Cầu lông Đà Nẵng</p>
+            <p className="font-label-md text-[12px] text-on-surface-variant">CLB Cầu lông Đà Nẵng</p>
           </div>
         </div>
         {isHostOrAdmin && (
@@ -65,6 +82,12 @@ export default function HostAdminLayout({ children }: { children: React.ReactNod
             <Link to="/participants" className={navItemClass('/participants')}>
               <span className="material-symbols-outlined" style={{ fontVariationSettings: isActive('/participants') ? "'FILL' 1" : "'FILL' 0" }}>group</span>
               Vận động viên
+            </Link>
+          )}
+          {isHostOrAdmin && (
+            <Link to="/host/analytics" className={navItemClass('/host/analytics')}>
+              <span className="material-symbols-outlined" style={{ fontVariationSettings: isActive('/host/analytics') ? "'FILL' 1" : "'FILL' 0" }}>analytics</span>
+              Thống kê
             </Link>
           )}
           {role === 'admin' && (

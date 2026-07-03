@@ -18,6 +18,36 @@ export default function DashboardPage() {
     return saved ? JSON.parse(saved) : [];
   });
 
+  const [isLoading, setIsLoading] = useState(true);
+  const [isQueueOpen, setIsQueueOpen] = useState(false);
+
+  const handleUpdateStatus = (id: number, status: 'approved' | 'rejected') => {
+    const saved = localStorage.getItem('courtmate_registrations');
+    if (saved) {
+      const list = JSON.parse(saved);
+      const updated = list.map((p: any) => {
+        if (p.id === id) {
+          return { ...p, status };
+        }
+        return p;
+      });
+      localStorage.setItem('courtmate_registrations', JSON.stringify(updated));
+      setRegistrations(updated);
+    }
+  };
+  const [checkedItems, setCheckedItems] = useState<Record<string, boolean>>({
+    'Kiểm tra sân bãi và khung giờ': true
+  });
+
+  const prevRegistrationsCount = React.useRef(registrations.length);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 600); // 600ms simulation
+    return () => clearTimeout(timer);
+  }, []);
+
   useEffect(() => {
     const handleStorage = () => {
       const saved = localStorage.getItem('courtmate_registrations');
@@ -32,6 +62,24 @@ export default function DashboardPage() {
       clearInterval(interval);
     };
   }, []);
+
+  // Trigger notification when new registration is pushed to queue
+  useEffect(() => {
+    if (registrations.length > prevRegistrationsCount.current) {
+      const newReg = registrations[0];
+      if (newReg && newReg.status === 'pending') {
+        window.dispatchEvent(
+          new CustomEvent('courtmate_toast', {
+            detail: {
+              message: `🔔 Có đơn đăng ký mới từ VĐV ${newReg.name}!`,
+              type: 'info'
+            }
+          })
+        );
+      }
+    }
+    prevRegistrationsCount.current = registrations.length;
+  }, [registrations]);
 
   const { pendingCount, approvedCount, approvalQueue } = useMemo(() => {
     const pending = registrations.filter((r) => r.status === 'pending');
@@ -62,14 +110,51 @@ export default function DashboardPage() {
     };
   }, [registrations]);
 
+  const [customEventsCount, setCustomEventsCount] = useState(0);
+  useEffect(() => {
+    const savedTournaments = localStorage.getItem('courtmate_tournaments');
+    if (savedTournaments) {
+      setCustomEventsCount(JSON.parse(savedTournaments).length);
+    }
+  }, []);
+
   const metrics = useMemo(() => {
     return [
-      { key: 'events', label: 'Sự kiện đang quản lý', value: '3' },
+      { key: 'events', label: 'Sự kiện đang quản lý', value: String(HOST_EVENTS.length + customEventsCount) },
       { key: 'pending', label: 'Đơn đăng ký chờ duyệt', value: String(pendingCount) },
-      { key: 'athletes', label: 'Vận động viên đã xác nhận', value: String(approvedCount + 12) }, // base offset 12 for mock
+      { key: 'athletes', label: 'Vận động viên đã xác nhận', value: String(approvedCount) },
       { key: 'fill', label: 'Tỉ lệ lấp đầy trung bình', value: '86%' },
     ];
-  }, [pendingCount, approvedCount]);
+  }, [pendingCount, approvedCount, customEventsCount]);
+
+  const handleToggleCheck = (item: string) => {
+    setCheckedItems((prev) => ({
+      ...prev,
+      [item]: !prev[item]
+    }));
+  };
+
+  const getStatusClasses = (status: string) => {
+    switch (status) {
+      case 'Đang mở đăng ký':
+        return 'bg-[#e8f5e9] text-[#2e7d32] border-[#c8e6c9]';
+      case 'Chuẩn bị bốc thăm':
+        return 'bg-[#e3f2fd] text-[#1565c0] border-[#bbdefb]';
+      case 'Chờ duyệt nội dung':
+        return 'bg-[#fff3e0] text-[#e65100] border-[#ffe0b2]';
+      default:
+        return 'bg-surface-container-high text-on-surface border-outline-variant/30';
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="w-full h-[60vh] flex flex-col items-center justify-center space-y-4">
+        <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+        <p className="text-on-surface-variant font-medium animate-pulse">Đang tải dữ liệu bảng điều khiển...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-xl animate-fade-in-up">
@@ -147,9 +232,11 @@ export default function DashboardPage() {
                 <Link key={event.id} to={`/event/${event.id}`} className="rounded-2xl border border-outline-variant/50 bg-white/70 p-4 hover:bg-white transition-colors block">
                   <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
                     <div>
-                      <div className="flex items-center gap-2 flex-wrap">
+                      <div className="flex items-center gap-3 flex-wrap">
                         <h3 className="font-semibold text-on-background">{event.title}</h3>
-                        <span className="text-xs px-2 py-1 rounded-full bg-primary-container/50 text-primary font-semibold">{event.status}</span>
+                        <span className={`text-[12px] px-2.5 py-0.5 rounded-full font-bold border whitespace-nowrap shrink-0 ${getStatusClasses(event.status)}`}>
+                          {event.status}
+                        </span>
                       </div>
                       <p className="text-sm text-on-surface-variant mt-1">{event.date} • {event.venue}</p>
                     </div>
@@ -201,12 +288,31 @@ export default function DashboardPage() {
                 </div>
               </div>
               <div className="space-y-3">
-                {checklist.map((item) => (
-                  <label key={item} className="flex items-center gap-3 rounded-2xl border border-outline-variant/50 bg-white/70 px-4 py-3">
-                    <input type="checkbox" className="h-4 w-4 accent-[color:var(--color-primary)]" defaultChecked={item === 'Kiểm tra sân bãi và khung giờ'} />
-                    <span className="text-sm text-on-background">{item}</span>
-                  </label>
-                ))}
+                {checklist.map((item) => {
+                  const isChecked = !!checkedItems[item];
+                  return (
+                    <label
+                      key={item}
+                      className={`flex items-center gap-3 rounded-2xl border px-4 py-3 cursor-pointer transition-all duration-200 ${
+                        isChecked
+                          ? 'bg-[#e8f5e9]/40 border-[#c8e6c9] shadow-sm'
+                          : 'bg-white/70 border-outline-variant/50 hover:bg-white hover:border-primary/30'
+                      }`}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={isChecked}
+                        onChange={() => handleToggleCheck(item)}
+                        className="h-5 w-5 rounded text-primary focus:ring-primary border-outline-variant cursor-pointer"
+                      />
+                      <span className={`text-sm font-semibold transition-all duration-200 ${
+                        isChecked ? 'line-through text-on-surface-variant/60 italic' : 'text-on-surface'
+                      }`}>
+                        {item}
+                      </span>
+                    </label>
+                  );
+                })}
               </div>
             </article>
           </div>
@@ -215,11 +321,20 @@ export default function DashboardPage() {
         <div className="xl:col-span-4 space-y-lg">
           <article className="glass-card rounded-[28px] p-lg">
             <div className="flex items-center justify-between mb-5">
-              <div>
+              <div className="flex items-center gap-2">
                 <h2 className="font-title-lg text-title-lg font-bold text-on-background">Hàng chờ duyệt</h2>
-                <p className="text-sm text-on-surface-variant mt-1">Các yêu cầu cần phản hồi sớm.</p>
+                {pendingCount > 0 && (
+                  <span className="w-5 h-5 rounded-full bg-error text-on-error text-[11px] font-bold flex items-center justify-center shrink-0 animate-pulse">
+                    {pendingCount}
+                  </span>
+                )}
               </div>
-              <span className="text-xs font-semibold px-2 py-1 rounded-full bg-secondary-container/50 text-secondary">{pendingCount > 0 ? `${pendingCount} mới` : 'Mẫu'}</span>
+              <button
+                onClick={() => setIsQueueOpen(true)}
+                className="text-xs text-primary font-bold hover:underline"
+              >
+                Xem tất cả
+              </button>
             </div>
             <div className="space-y-3">
               {approvalQueue.map((item, idx) => (
@@ -252,6 +367,80 @@ export default function DashboardPage() {
           </article>
         </div>
       </section>
+
+      {isQueueOpen && (
+        <div
+          className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-on-background/60 backdrop-blur-sm overflow-hidden animate-in fade-in duration-200"
+          onClick={() => setIsQueueOpen(false)}
+        >
+          <div
+            className="relative w-full max-w-[600px] bg-background border border-outline-variant/30 rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-in zoom-in-95 duration-200"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div className="p-md md:p-lg border-b border-outline-variant/20 flex justify-between items-center bg-surface-container-lowest">
+              <div className="flex items-center gap-2">
+                <span className="material-symbols-outlined text-primary text-[24px]">pending_actions</span>
+                <h3 className="font-headline-sm text-[18px] leading-[28px] font-bold text-on-background">Danh sách chờ duyệt ({pendingCount})</h3>
+              </div>
+              <button
+                onClick={() => setIsQueueOpen(false)}
+                className="w-8 h-8 rounded-full hover:bg-surface-variant transition-colors flex items-center justify-center text-on-surface-variant"
+              >
+                <span className="material-symbols-outlined text-[20px]">close</span>
+              </button>
+            </div>
+            
+            {/* Modal Content */}
+            <div className="p-md md:p-lg space-y-md max-h-[60vh] overflow-y-auto custom-scrollbar">
+              {registrations.filter(r => r.status === 'pending').length === 0 ? (
+                <div className="text-center py-8 text-on-surface-variant italic">Không có yêu cầu chờ duyệt nào.</div>
+              ) : (
+                registrations.filter(r => r.status === 'pending').map((item, idx) => (
+                  <div key={item.id || idx} className="flex items-start justify-between gap-4 p-md rounded-2xl border border-outline-variant/50 bg-white/70 shadow-sm">
+                    <div className="min-w-0 flex-1 flex items-start gap-3">
+                      <div className="w-10 h-10 rounded-full bg-primary-container/40 text-primary flex items-center justify-center shrink-0 font-bold">
+                        {item.name.charAt(0)}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="font-semibold text-on-background truncate">{item.name}</p>
+                        <p className="text-sm text-on-surface-variant mt-1 truncate">{item.tournament}</p>
+                        <p className="text-xs text-on-surface-variant mt-1 font-semibold text-secondary">{item.category} • {item.level || 'Khá'}</p>
+                      </div>
+                    </div>
+                    <div className="flex gap-1 shrink-0">
+                      <button
+                        onClick={() => handleUpdateStatus(item.id, 'approved')}
+                        className="w-8 h-8 rounded-full flex items-center justify-center bg-[#e8f5e9] text-[#2e7d32] hover:bg-[#c8e6c9] hover:scale-105 active:scale-95 transition-all shadow-sm"
+                        title="Duyệt"
+                      >
+                        <span className="material-symbols-outlined text-[18px] font-bold">done</span>
+                      </button>
+                      <button
+                        onClick={() => handleUpdateStatus(item.id, 'rejected')}
+                        className="w-8 h-8 rounded-full flex items-center justify-center bg-[#ffebee] text-[#c62828] hover:bg-[#ffcdd2] hover:scale-105 active:scale-95 transition-all shadow-sm"
+                        title="Từ chối"
+                      >
+                        <span className="material-symbols-outlined text-[18px] font-bold">close</span>
+                      </button>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+
+            {/* Modal Footer */}
+            <div className="p-md bg-surface-container-lowest border-t border-outline-variant/15 flex justify-end">
+              <button
+                onClick={() => setIsQueueOpen(false)}
+                className="px-4 py-2 rounded-lg font-label-md text-sm border border-outline-variant text-on-surface hover:bg-surface-variant transition-colors"
+              >
+                Đóng
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

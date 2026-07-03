@@ -13,7 +13,7 @@ const INITIAL_PARTICIPANTS = [
     category: "Đơn Nam",
     level: "Khá",
     status: "approved" as ParticipantStatus,
-    date: "12 Th9 2024",
+    date: "12 Th9 2026",
   },
   {
     id: 2,
@@ -24,7 +24,7 @@ const INITIAL_PARTICIPANTS = [
     category: "Đôi Nữ",
     level: "Trung bình",
     status: "pending" as ParticipantStatus,
-    date: "13 Th9 2024",
+    date: "13 Th9 2026",
   },
   {
     id: 3,
@@ -35,7 +35,7 @@ const INITIAL_PARTICIPANTS = [
     category: "Đôi Nam",
     level: "Yếu",
     status: "rejected" as ParticipantStatus,
-    date: "10 Th9 2024",
+    date: "10 Th9 2026",
   },
   {
     id: 4,
@@ -46,7 +46,7 @@ const INITIAL_PARTICIPANTS = [
     category: "Đôi Nam Nữ",
     level: "Trung bình",
     status: "approved" as ParticipantStatus,
-    date: "14 Th9 2024",
+    date: "14 Th9 2026",
   },
   {
     id: 5,
@@ -57,7 +57,7 @@ const INITIAL_PARTICIPANTS = [
     category: "Đôi Nam Nữ",
     level: "Khá",
     status: "pending" as ParticipantStatus,
-    date: "15 Th9 2024",
+    date: "15 Th9 2026",
   },
 ];
 
@@ -165,6 +165,25 @@ export default function ParticipantsPage() {
   };
 
 
+  const getTabStyle = (value: "all" | ParticipantStatus) => {
+    const isActive = activeTab === value;
+    if (!isActive) {
+      return "text-on-surface-variant hover:bg-surface-variant/50 hover:text-on-surface border border-transparent";
+    }
+    switch (value) {
+      case "all":
+        return "bg-slate-900 text-white shadow-sm border border-slate-900";
+      case "pending":
+        return "bg-[#fef3c7] text-[#92400e] border border-amber-300/60 shadow-sm";
+      case "approved":
+        return "bg-[#dcfce7] text-[#166534] border border-emerald-300/60 shadow-sm";
+      case "rejected":
+        return "bg-[#ffe4e6] text-[#9f1239] border border-rose-300/60 shadow-sm";
+      default:
+        return "";
+    }
+  };
+
   return (
     <>
       <header className="mb-xl">
@@ -172,44 +191,107 @@ export default function ParticipantsPage() {
           Vận động viên
         </h1>
         <p className="font-body-md text-body-md text-on-surface-variant">
-          Quản lý danh sách đăng ký và trạng thái duyệt hồ sơ của các vận động
-          viên.
+          Quản lý danh sách đăng ký và trạng thái duyệt hồ sơ của các vận động viên.
         </p>
       </header>
 
+      {/* Modern interactive summary cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-md mb-lg">
-        <div className="bg-surface-container-lowest p-md rounded-xl border border-outline-variant/30 flex flex-col justify-center items-center text-center shadow-sm">
-          <span className="font-label-md text-on-surface-variant uppercase tracking-wider mb-1">
-            Tổng cộng
-          </span>
-          <span className="font-headline-md font-bold text-on-surface">
-            {totalCount}
-          </span>
-        </div>
-        <div className="bg-[#e8f5e9] p-md rounded-xl border border-[#c8e6c9] flex flex-col justify-center items-center text-center shadow-sm">
-          <span className="font-label-md text-[#2e7d32] uppercase tracking-wider mb-1">
-            Đã duyệt
-          </span>
-          <span className="font-headline-md font-bold text-[#1b5e20]">
-            {approvedCount}
-          </span>
-        </div>
-        <div className="bg-tertiary-container/30 p-md rounded-xl border border-tertiary-container flex flex-col justify-center items-center text-center shadow-sm">
-          <span className="font-label-md text-tertiary uppercase tracking-wider mb-1">
-            Chờ duyệt
-          </span>
-          <span className="font-headline-md font-bold text-tertiary">
-            {pendingCount}
-          </span>
-        </div>
-        <div className="bg-error-container/30 p-md rounded-xl border border-error-container flex flex-col justify-center items-center text-center shadow-sm">
-          <span className="font-label-md text-error uppercase tracking-wider mb-1">
-            Từ chối
-          </span>
-          <span className="font-headline-md font-bold text-error">
-            {rejectedCount}
-          </span>
-        </div>
+        {/* Card: Tổng cộng */}
+        <button
+          onClick={() => setTab("all")}
+          className={`group flex items-center justify-between p-lg rounded-2xl border transition-all duration-300 text-left ${
+            activeTab === "all"
+              ? "bg-gradient-to-br from-slate-50 to-white border-slate-400 shadow-md scale-[1.02]"
+              : "bg-white/80 border-slate-200/60 hover:bg-white hover:border-slate-300 hover:shadow-sm hover:-translate-y-0.5"
+          }`}
+        >
+          <div className="space-y-1">
+            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">
+              Tổng cộng
+            </span>
+            <span className="text-3xl font-black text-slate-900 leading-none block">
+              {totalCount}
+            </span>
+          </div>
+          <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-all ${
+            activeTab === "all" ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-500 group-hover:bg-slate-200/80"
+          }`}>
+            <span className="material-symbols-outlined text-[24px]">group</span>
+          </div>
+        </button>
+
+        {/* Card: Đã duyệt */}
+        <button
+          onClick={() => setTab("approved")}
+          className={`group flex items-center justify-between p-lg rounded-2xl border transition-all duration-300 text-left ${
+            activeTab === "approved"
+              ? "bg-gradient-to-br from-[#f0fdf4] to-white border-emerald-400 shadow-md scale-[1.02]"
+              : "bg-white/80 border-slate-200/60 hover:bg-[#f0fdf4]/50 hover:border-emerald-300 hover:shadow-sm hover:-translate-y-0.5"
+          }`}
+        >
+          <div className="space-y-1">
+            <span className="text-xs font-bold text-emerald-700 uppercase tracking-wider block">
+              Đã duyệt
+            </span>
+            <span className="text-3xl font-black text-[#166534] leading-none block">
+              {approvedCount}
+            </span>
+          </div>
+          <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-all ${
+            activeTab === "approved" ? "bg-[#166534] text-white" : "bg-[#e8f5e9] text-[#2e7d32] group-hover:bg-[#c8e6c9]/60"
+          }`}>
+            <span className="material-symbols-outlined text-[24px]">check_circle</span>
+          </div>
+        </button>
+
+        {/* Card: Chờ duyệt */}
+        <button
+          onClick={() => setTab("pending")}
+          className={`group flex items-center justify-between p-lg rounded-2xl border transition-all duration-300 text-left ${
+            activeTab === "pending"
+              ? "bg-gradient-to-br from-[#fffbeb] to-white border-amber-400 shadow-md scale-[1.02]"
+              : "bg-white/80 border-slate-200/60 hover:bg-[#fffbeb]/50 hover:border-amber-300 hover:shadow-sm hover:-translate-y-0.5"
+          }`}
+        >
+          <div className="space-y-1">
+            <span className="text-xs font-bold text-amber-700 uppercase tracking-wider block">
+              Chờ duyệt
+            </span>
+            <span className="text-3xl font-black text-[#92400e] leading-none block">
+              {pendingCount}
+            </span>
+          </div>
+          <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-all ${
+            activeTab === "pending" ? "bg-[#92400e] text-white" : "bg-[#fef3c7] text-[#b45309] group-hover:bg-[#fde68a]/60"
+          }`}>
+            <span className="material-symbols-outlined text-[24px]">pending_actions</span>
+          </div>
+        </button>
+
+        {/* Card: Từ chối */}
+        <button
+          onClick={() => setTab("rejected")}
+          className={`group flex items-center justify-between p-lg rounded-2xl border transition-all duration-300 text-left ${
+            activeTab === "rejected"
+              ? "bg-gradient-to-br from-[#fff1f2] to-white border-rose-400 shadow-md scale-[1.02]"
+              : "bg-white/80 border-slate-200/60 hover:bg-[#fff1f2]/50 hover:border-rose-300 hover:shadow-sm hover:-translate-y-0.5"
+          }`}
+        >
+          <div className="space-y-1">
+            <span className="text-xs font-bold text-rose-700 uppercase tracking-wider block">
+              Từ chối
+            </span>
+            <span className="text-3xl font-black text-[#9f1239] leading-none block">
+              {rejectedCount}
+            </span>
+          </div>
+          <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-all ${
+            activeTab === "rejected" ? "bg-[#9f1239] text-white" : "bg-[#ffe4e6] text-[#be123c] group-hover:bg-[#fecdd3]/60"
+          }`}>
+            <span className="material-symbols-outlined text-[24px]">cancel</span>
+          </div>
+        </button>
       </div>
 
       <div className="bg-white/60 backdrop-blur-xl border border-white/50 shadow-[0_8px_32px_rgba(0,0,0,0.04)] rounded-3xl overflow-hidden flex flex-col">
@@ -218,7 +300,7 @@ export default function ParticipantsPage() {
             {tabs.map((tab) => (
               <button
                 key={tab.value}
-                className={`px-4 py-2 rounded-lg font-label-md transition-colors ${activeTab === tab.value ? tab.className : "text-on-surface-variant hover:bg-surface-variant/50"}`}
+                className={`px-4 py-2 rounded-lg font-label-md font-bold transition-all border ${getTabStyle(tab.value)}`}
                 onClick={() => setTab(tab.value)}
               >
                 {tab.label}

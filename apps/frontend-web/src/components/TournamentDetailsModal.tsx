@@ -37,11 +37,11 @@ export default function TournamentDetailsModal({ isOpen, onClose, post }: Tourna
       } else {
         // Initialize with default mock if it doesn't exist
         const initial = [
-          { id: 101, name: 'Nguyễn Văn An', phone: '0901234567', email: 'an.nguyen@email.com', tournament: 'Giải Cầu Lông Đà Nẵng Open 2026', tournamentId: 1, category: 'Đơn Nam', level: 'Khá', status: 'approved', date: '12 Th9 2024' },
-          { id: 102, name: 'Trần Thị Bình', phone: '0912345678', email: 'binh.tran@email.com', tournament: 'Giải Cầu Lông Đà Nẵng Open 2026', tournamentId: 1, category: 'Đôi Nữ', level: 'Trung bình', status: 'pending', date: '13 Th9 2024' },
-          { id: 103, name: 'Lê Hoàng Tâm', phone: '0923456789', email: 'tam.le@email.com', tournament: 'Giải Cầu Lông Đà Nẵng Open 2026', tournamentId: 1, category: 'Đôi Nam', level: 'Yếu', status: 'approved', date: '10 Th9 2024' },
-          { id: 104, name: 'Phạm Ngọc Mai', phone: '0934567890', email: 'mai.pham@email.com', tournament: 'Giải Cầu Lông Đôi Nam Nữ Thanh Khê', tournamentId: 3, category: 'Đôi Nam Nữ', level: 'Trung bình', status: 'approved', date: '14 Th9 2024' },
-          { id: 105, name: 'Vũ Quốc Bảo', phone: '0945678901', email: 'bao.vu@email.com', tournament: 'Giải Cầu Lông Đôi Nam Nữ Thanh Khê', tournamentId: 3, category: 'Đôi Nam Nữ', level: 'Khá', status: 'pending', date: '15 Th9 2024' },
+          { id: 101, name: 'Nguyễn Văn An', phone: '0901234567', email: 'an.nguyen@email.com', tournament: 'Giải Cầu Lông Đà Nẵng Open 2026', tournamentId: 1, category: 'Đơn Nam', level: 'Khá', status: 'approved', date: '12 Th9 2026' },
+          { id: 102, name: 'Trần Thị Bình', phone: '0912345678', email: 'binh.tran@email.com', tournament: 'Giải Cầu Lông Đà Nẵng Open 2026', tournamentId: 1, category: 'Đôi Nữ', level: 'Trung bình', status: 'pending', date: '13 Th9 2026' },
+          { id: 103, name: 'Lê Hoàng Tâm', phone: '0923456789', email: 'tam.le@email.com', tournament: 'Giải Cầu Lông Đà Nẵng Open 2026', tournamentId: 1, category: 'Đôi Nam', level: 'Yếu', status: 'approved', date: '10 Th9 2026' },
+          { id: 104, name: 'Phạm Ngọc Mai', phone: '0934567890', email: 'mai.pham@email.com', tournament: 'Giải Cầu Lông Đôi Nam Nữ Thanh Khê', tournamentId: 3, category: 'Đôi Nam Nữ', level: 'Trung bình', status: 'approved', date: '14 Th9 2026' },
+          { id: 105, name: 'Vũ Quốc Bảo', phone: '0945678901', email: 'bao.vu@email.com', tournament: 'Giải Cầu Lông Đôi Nam Nữ Thanh Khê', tournamentId: 3, category: 'Đôi Nam Nữ', level: 'Khá', status: 'pending', date: '15 Th9 2026' },
         ];
         localStorage.setItem('courtmate_registrations', JSON.stringify(initial));
         setRegistrations(initial.filter((r: any) => r.tournamentId === post.id));
