@@ -27,7 +27,7 @@ services:
         sync: false
 
   # 2. Dịch vụ Frontend (Vite Static Site)
-  - type: static
+  - type: web
     name: courtmate-frontend
     env: static
     plan: free
