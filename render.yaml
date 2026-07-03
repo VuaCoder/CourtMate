@@ -31,7 +31,6 @@ services:
   - type: web
     name: courtmate-frontend
     env: static
-    plan: free
     buildCommand: npm install && npm run build --workspace=frontend-web
     staticPublishPath: apps/frontend-web/dist
     buildFilter:
