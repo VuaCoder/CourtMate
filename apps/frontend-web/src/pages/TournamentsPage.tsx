@@ -58,6 +58,32 @@ const MOCK_POSTS = generateMockPosts();
 export default function TournamentsPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const query = searchParams.get('q') || '';
+  
+  const [posts, setPosts] = useState<any[]>(() => {
+    const savedTournaments = localStorage.getItem('courtmate_tournaments');
+    if (savedTournaments) {
+      return JSON.parse(savedTournaments);
+    } else {
+      localStorage.setItem('courtmate_tournaments', JSON.stringify(MOCK_POSTS));
+      return MOCK_POSTS;
+    }
+  });
+
+  // Sync state with localStorage updates
+  useEffect(() => {
+    const handleStorageChange = () => {
+      const saved = localStorage.getItem('courtmate_tournaments');
+      if (saved) {
+        setPosts(JSON.parse(saved));
+      }
+    };
+    window.addEventListener('storage', handleStorageChange);
+    const interval = setInterval(handleStorageChange, 1000); // Poll every second for seamless local updates
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      clearInterval(interval);
+    };
+  }, []);
   const courtQuery = searchParams.get('court') || '';
 
   const [dateRange, setDateRange] = useState<[Date | null, Date | null]>([null, null]);
@@ -97,7 +123,14 @@ export default function TournamentsPage() {
     setSearchParams(newParams);
   };
 
-  const filteredPosts = MOCK_POSTS.filter(post => {
+  const getRegCount = (postId: number) => {
+    const saved = localStorage.getItem('courtmate_registrations');
+    if (!saved) return 0;
+    const regs = JSON.parse(saved);
+    return regs.filter((r: any) => r.tournamentId === postId).length;
+  };
+
+  const filteredPosts = posts.filter(post => {
     let matches = true;
     if (query) {
       const searchStr = query.toLowerCase();
@@ -332,6 +365,12 @@ export default function TournamentsPage() {
                         <span className="material-symbols-outlined text-[18px] text-tertiary">payments</span>
                         <span className="font-body-sm text-body-sm font-semibold">{post.fee}</span>
                       </div>
+                      <div className="flex items-center gap-2 text-on-surface">
+                        <span className="material-symbols-outlined text-[18px] text-tertiary">groups</span>
+                        <span className="font-body-sm text-body-sm font-semibold text-primary">
+                          {getRegCount(post.id)}/{post.limit || 32} VĐV đã đăng ký
+                        </span>
+                      </div>
                     </>
                   ) : (
                     <div className="flex items-center gap-2 text-on-surface">
@@ -370,7 +409,7 @@ export default function TournamentsPage() {
       <TournamentDetailsModal 
         isOpen={isModalOpen && selectedPost?.type === 'tournament'} 
         onClose={() => setIsModalOpen(false)} 
-        postTitle={selectedPost?.title || 'Giải đấu'}
+        post={selectedPost}
       />
       <MatchDetailsModal 
         isOpen={isModalOpen && selectedPost?.type === 'match'} 

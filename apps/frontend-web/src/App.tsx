@@ -1,3 +1,4 @@
+import React, { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import LandingPage from './pages/LandingPage';
 import OrganizerSettings from './pages/OrganizerSettings';
@@ -15,6 +16,32 @@ import { ProtectedRoute } from './components/ProtectedRoute';
 import './index.css';
 
 function App() {
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'info' | 'error' } | null>(null);
+
+  useEffect(() => {
+    const handleToastEvent = (e: Event) => {
+      const customEvent = e as CustomEvent;
+      if (customEvent.detail) {
+        setToast({
+          message: customEvent.detail.message,
+          type: customEvent.detail.type || 'success'
+        });
+      }
+    };
+
+    window.addEventListener('courtmate_toast', handleToastEvent);
+    return () => {
+      window.removeEventListener('courtmate_toast', handleToastEvent);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (toast) {
+      const timer = setTimeout(() => setToast(null), 4000);
+      return () => clearTimeout(timer);
+    }
+  }, [toast]);
+
   return (
     <LoadingProvider>
       <LoadingScreen>
@@ -35,6 +62,29 @@ function App() {
               {/* All authenticated users */}
               <Route path="/tournaments" element={<ProtectedRoute allowedRoles={['user', 'host', 'admin']}><Layout><TournamentsPage /></Layout></ProtectedRoute>} />
             </Routes>
+
+            {/* Global Animated Toast Notification */}
+            {toast && (
+              <div className="fixed bottom-6 right-6 z-[999] max-w-sm bg-white/90 backdrop-blur-md border border-outline-variant/60 rounded-xl shadow-2xl p-md flex items-center gap-sm animate-in slide-in-from-bottom duration-300">
+                <div className={`w-8 h-8 rounded-full flex flex-shrink-0 items-center justify-center ${
+                  toast.type === 'success' ? 'bg-[#e8f5e9] text-[#2e7d32]' : 
+                  toast.type === 'error' ? 'bg-error-container text-error' : 
+                  'bg-secondary-container text-on-secondary-container'
+                }`}>
+                  <span className="material-symbols-outlined text-[20px]">
+                    {toast.type === 'success' ? 'check_circle' : 
+                     toast.type === 'error' ? 'cancel' : 
+                     'info'}
+                  </span>
+                </div>
+                <div className="flex-1 font-body-sm text-body-sm font-semibold text-on-background">
+                  {toast.message}
+                </div>
+                <button onClick={() => setToast(null)} className="text-on-surface-variant hover:text-on-surface">
+                  <span className="material-symbols-outlined text-[16px]">close</span>
+                </button>
+              </div>
+            )}
           </AuthProvider>
         </BrowserRouter>
       </LoadingScreen>
