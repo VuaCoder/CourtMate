@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { useAuth } from '../context/AuthContext';
 import TournamentDetailsModal from '../components/TournamentDetailsModal';
 import MatchDetailsModal from '../components/MatchDetailsModal';
-const COURTS = ['Cung Thể Thao Tiên Sơn', 'Sân Cầu Lông Kỳ Đồng', 'Sân Tuyên Sơn', 'Sân Thanh Khê', 'Sân Hoà Xuân', 'Sân Bế Văn Đàn'];
+
+const COURTS = ['Cung Thể Thao Tiên Sơn', 'Sân Cầu Lông Kỳ Đồng', 'Sân Tuyến Sơn', 'Sân Thanh Khê', 'Sân Hoà Xuân', 'Sân Bế Văn Đàn'];
 
 const generateMockPosts = () => {
   const posts = [
@@ -23,11 +24,10 @@ const generateMockPosts = () => {
     },
     {
       id: 4, type: 'match', authorName: 'Mai Sương', authorAvatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCWDtjwj9EYv3ovmCldYzVCLFcIiLRDFJfF49m87F-SUWiD5lWCmwUSGIsLuvnfjagqC6xAGPTTXlcI4dF8gAYkVRfkU6j0QOx1oMP5w__xAIKDhdRyJV4Sjk9nuPopUKOzs2NqE8tHe-zZdqG5vi0vgayjKkF0zEQCLa4kOuS73n0CB2OLRUMBhbWtH9eJXndpZrJaXpZaH_phmMYOLr2UNbn5_R24Wq7ekswtAuM_XQN0NI87DHBBXA',
-      postedTime: 'Đăng 1 giờ trước', statusText: 'Cần người', title: '', desc: 'TUYỂN VL Nam Nữ Sáng Nay (30/6)\n⏰ 9h - 11h\n🎪 Sân Lâm Gia 17 bàu năng 11\n🔥 Tb- , Tby\n🪎 Nam 50k Nữ 45K\nIb m ạ', location: 'Sân Lâm Gia 17 Bàu Năng 11', schedule: '09:00 - 11:00', level: 'TB Yếu - TB', fbLink: 'https://www.facebook.com/groups/300385366290013/posts/1012999208361955/'
+      postedTime: 'Đăng 1 giờ trước', statusText: 'Cần người', title: '', desc: 'TUYỂN VL Nam Nữ Sáng Nay (30/6)\n⏰ 9h - 11h\n🎪 Sân Lâm Gia 17 bầu năng 11\n🔥 Tb- , Tby\n🪎 Nam 50k Nữ 45K\nIb m ạ', location: 'Sân Lâm Gia 17 Bầu Năng 11', schedule: '09:00 - 11:00', level: 'TB Yếu - TB', fbLink: 'https://www.facebook.com/groups/300385366290013/posts/1012999208361955/'
     }
   ];
 
-  // Generate 16 more mock posts
   const names = ['Hoàng Minh', 'Lê Hữu', 'Phạm Tuấn', 'Vũ Ngọc', 'Bùi Xuân', 'Đặng Thùy', 'Ngô Kiến', 'Đỗ Duy'];
   const titles = ['Giải Sinh Viên', 'Giao Hữu', 'Tranh Cúp Mùa Hè', 'Giải Nội Bộ', 'Thách Đấu Ngày Chủ Nhật'];
 
@@ -64,21 +64,15 @@ export default function TournamentsPage() {
   const [startDate, endDate] = dateRange;
   const [startTime, setStartTime] = useState('');
   const [endTime, setEndTime] = useState('');
-
-  // Infinity Scroll state
   const [displayCount, setDisplayCount] = useState(6);
   const observerTarget = useRef<HTMLDivElement>(null);
-
-  // Modal State
   const [selectedPost, setSelectedPost] = useState<any>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-
-  // Greeting
   const currentHour = new Date().getHours();
   let greeting = 'Chào buổi tối';
   if (currentHour >= 5 && currentHour < 12) greeting = 'Chào buổi sáng';
   else if (currentHour >= 12 && currentHour < 18) greeting = 'Chào buổi chiều';
-  
+
   const { userName } = useAuth();
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -101,12 +95,7 @@ export default function TournamentsPage() {
     let matches = true;
     if (query) {
       const searchStr = query.toLowerCase();
-      matches = (
-        post.authorName.toLowerCase().includes(searchStr) ||
-        (post.title && post.title.toLowerCase().includes(searchStr)) ||
-        post.desc.toLowerCase().includes(searchStr) ||
-        post.location.toLowerCase().includes(searchStr)
-      );
+      matches = post.authorName.toLowerCase().includes(searchStr) || (post.title && post.title.toLowerCase().includes(searchStr)) || post.desc.toLowerCase().includes(searchStr) || post.location.toLowerCase().includes(searchStr);
     }
     if (courtQuery) {
       matches = matches && post.location.toLowerCase().includes(courtQuery.toLowerCase());
@@ -117,40 +106,30 @@ export default function TournamentsPage() {
   const displayedPosts = filteredPosts.slice(0, displayCount);
 
   useEffect(() => {
-    const observer = new IntersectionObserver(
-      entries => {
-        if (entries[0].isIntersecting) {
-          setDisplayCount(prev => Math.min(prev + 6, filteredPosts.length));
-        }
-      },
-      { threshold: 0.1 }
-    );
-    if (observerTarget.current) {
-      observer.observe(observerTarget.current);
-    }
+    const observer = new IntersectionObserver(entries => {
+      if (entries[0].isIntersecting) {
+        setDisplayCount(prev => Math.min(prev + 6, filteredPosts.length));
+      }
+    }, { threshold: 0.1 });
+    if (observerTarget.current) observer.observe(observerTarget.current);
     return () => observer.disconnect();
   }, [filteredPosts.length]);
 
   return (
     <main className="w-full max-w-7xl mx-auto px-margin-mobile md:px-margin-desktop py-xl">
-      {/* Header Section */}
       <header className="mb-md text-left">
         <h1 className="font-display-lg text-display-lg md:text-[48px] text-[32px] font-bold text-on-background mb-sm">
           {greeting}, {userName}!
         </h1>
       </header>
 
-      {/* Main Grid Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-lg relative items-start">
-        {/* Left Sidebar: Filters */}
         <aside className="lg:col-span-3 flex flex-col gap-md lg:sticky top-[100px]">
           <div className="glass-card bg-white/70 backdrop-blur-md border border-white/50 shadow-sm rounded-3xl p-lg flex flex-col gap-lg max-h-[calc(100vh-120px)] overflow-y-auto custom-scrollbar">
             <h2 className="font-title-lg text-title-lg font-bold text-on-background flex items-center gap-2">
               <span className="material-symbols-outlined">filter_list</span>
               Bộ lọc
             </h2>
-
-            {/* Lọc Sân */}
             <div className="flex flex-col gap-sm">
               <label className="font-label-md text-label-md text-on-surface-variant">Lọc Sân</label>
               <div className="relative">
@@ -158,13 +137,9 @@ export default function TournamentsPage() {
                   <option value="">Tất cả các sân</option>
                   {COURTS.map(c => <option key={c} value={c}>{c}</option>)}
                 </select>
-                <span className="material-symbols-outlined absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-[18px] text-on-surface-variant">
-                  expand_more
-                </span>
+                <span className="material-symbols-outlined absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-[18px] text-on-surface-variant">expand_more</span>
               </div>
             </div>
-
-            {/* Khu vực */}
             <div className="flex flex-col gap-sm">
               <label className="font-label-md text-label-md text-on-surface-variant">Khu vực</label>
               <div className="relative">
@@ -177,13 +152,9 @@ export default function TournamentsPage() {
                   <option>Sơn Trà</option>
                   <option>Cẩm Lệ</option>
                 </select>
-                <span className="material-symbols-outlined absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-[18px] text-on-surface-variant">
-                  expand_more
-                </span>
+                <span className="material-symbols-outlined absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-[18px] text-on-surface-variant">expand_more</span>
               </div>
             </div>
-
-            {/* Trình độ */}
             <div className="flex flex-col gap-sm">
               <label className="font-label-md text-label-md text-on-surface-variant">Trình độ</label>
               <div className="relative">
@@ -195,18 +166,12 @@ export default function TournamentsPage() {
                   <option>Trung bình khá</option>
                   <option>Khá</option>
                 </select>
-                <span className="material-symbols-outlined absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-[18px] text-on-surface-variant">
-                  expand_more
-                </span>
+                <span className="material-symbols-outlined absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-[18px] text-on-surface-variant">expand_more</span>
               </div>
             </div>
-
-            {/* Thời gian */}
             <div className="flex flex-col gap-sm">
               <label className="font-label-md text-label-md text-on-surface-variant">Khoảng thời gian</label>
-              
               <div className="bg-surface-container-low border border-outline-variant rounded-xl p-3 shadow-sm overflow-hidden">
-                {/* Lịch custom */}
                 <div className="w-full flex justify-center mb-4 custom-datepicker">
                   <style dangerouslySetInnerHTML={{__html: `
                     .custom-datepicker .react-datepicker { font-family: inherit; border: none; background: transparent; width: 100%; display: flex; justify-content: center; }
@@ -218,50 +183,28 @@ export default function TournamentsPage() {
                     .custom-datepicker .react-datepicker__week { display: flex; justify-content: space-between; }
                     .custom-datepicker .react-datepicker__day--keyboard-selected { background-color: transparent; color: inherit; }
                     .custom-datepicker .react-datepicker__day:focus { outline: none; }
-                    input[type="time"]::-webkit-calendar-picker-indicator { width: 14px; height: 14px; padding: 0; margin-left: 2px; }
                   `}} />
-                  <DatePicker
-                    selectsRange={true}
-                    startDate={startDate}
-                    endDate={endDate}
-                    onChange={(update) => setDateRange(update)}
-                    inline
-                  />
+                  <DatePicker selectsRange={true} startDate={startDate} endDate={endDate} onChange={(update) => setDateRange(update)} inline />
                 </div>
-
                 <div className="border-t border-outline-variant/50 pt-3">
                   <label className="font-label-md text-[12px] text-on-surface-variant font-semibold mb-2 block">Khung giờ</label>
                   <div className="flex items-center gap-2">
                     <div className="flex-1 min-w-0">
                       <label className="text-[10px] text-on-surface-variant block mb-1">Từ giờ</label>
-                      <input 
-                        type="time" 
-                        value={startTime}
-                        onChange={e => setStartTime(e.target.value)}
-                        className="w-full px-1 py-1.5 bg-surface border border-outline-variant rounded-lg font-body-sm text-on-surface focus:ring-1 focus:ring-primary outline-none"
-                      />
+                      <input type="time" value={startTime} onChange={e => setStartTime(e.target.value)} className="w-full px-1 py-1.5 bg-surface border border-outline-variant rounded-lg font-body-sm text-on-surface focus:ring-1 focus:ring-primary outline-none" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <label className="text-[10px] text-on-surface-variant block mb-1">Đến giờ</label>
-                      <input 
-                        type="time" 
-                        value={endTime}
-                        onChange={e => setEndTime(e.target.value)}
-                        className="w-full px-1 py-1.5 bg-surface border border-outline-variant rounded-lg font-body-sm text-on-surface focus:ring-1 focus:ring-primary outline-none"
-                      />
+                      <input type="time" value={endTime} onChange={e => setEndTime(e.target.value)} className="w-full px-1 py-1.5 bg-surface border border-outline-variant rounded-lg font-body-sm text-on-surface focus:ring-1 focus:ring-primary outline-none" />
                     </div>
                   </div>
                 </div>
               </div>
             </div>
-
-            <button className="w-full py-2 mt-sm bg-primary text-on-primary rounded-xl font-label-md hover:opacity-90 transition-opacity active:scale-95">
-              Lọc
-            </button>
+            <button className="w-full py-2 mt-sm bg-primary text-on-primary rounded-xl font-label-md hover:opacity-90 transition-opacity active:scale-95">Lọc</button>
           </div>
         </aside>
 
-        {/* Right Content: Unified Feed Grid */}
         <section className="lg:col-span-9 flex flex-col gap-md">
           <div className="flex justify-between items-center mb-sm">
             <h2 className="font-headline-md text-headline-md font-semibold text-on-background flex items-center gap-2">
@@ -269,21 +212,10 @@ export default function TournamentsPage() {
               Bảng tin tổng hợp
             </h2>
           </div>
-
-          {/* Feed Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-md">
-            
             {displayedPosts.map(post => (
-              <div 
-                key={post.id} 
-                className="bg-white/80 backdrop-blur-sm border border-outline-variant/30 rounded-2xl p-md flex flex-col gap-sm hover:shadow-md transition-shadow cursor-pointer relative overflow-hidden group"
-                onClick={() => {
-                  setSelectedPost(post);
-                  setIsModalOpen(true);
-                }}
-              >
+              <div key={post.id} className="bg-white/80 backdrop-blur-sm border border-outline-variant/30 rounded-2xl p-md flex flex-col gap-sm hover:shadow-md transition-shadow cursor-pointer relative overflow-hidden group" onClick={() => { setSelectedPost(post); setIsModalOpen(true); }}>
                 <div className="absolute inset-0 bg-gradient-to-r from-surface-variant/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                
                 <div className="flex justify-between items-start relative z-10">
                   <div className="flex items-center gap-sm">
                     <div className="w-12 h-12 rounded-full overflow-hidden bg-surface-variant border border-outline-variant/20">
@@ -296,27 +228,17 @@ export default function TournamentsPage() {
                   </div>
                   <button className="text-on-surface-variant"><span className="material-symbols-outlined text-[20px]">more_horiz</span></button>
                 </div>
-
                 <div className="flex gap-2 relative z-10">
                   <span className={`px-3 py-1 text-[12px] font-bold rounded-full flex items-center gap-1 shadow-sm ${post.type === 'tournament' ? 'bg-primary text-on-primary' : 'bg-secondary-container text-on-secondary-container'}`}>
-                    <span className="material-symbols-outlined text-[14px]">
-                      {post.type === 'tournament' ? 'emoji_events' : 'local_fire_department'}
-                    </span> 
+                    <span className="material-symbols-outlined text-[14px]">{post.type === 'tournament' ? 'emoji_events' : 'local_fire_department'}</span>
                     {post.type === 'tournament' ? 'Giải đấu' : 'Kèo vãng lai'}
                   </span>
                   <span className={`px-2 py-1 text-[10px] font-bold rounded-full uppercase tracking-wider flex items-center ${post.statusText === 'Sắp đóng' ? 'bg-[#891933] text-white' : 'bg-surface-container-high text-on-surface'}`}>
                     {post.statusText}
                   </span>
                 </div>
-                
-                {post.title && (
-                  <h4 className="font-title-lg text-title-lg font-bold text-on-background mt-sm relative z-10">{post.title}</h4>
-                )}
-                
-                <p className={`font-body-md text-body-md text-on-surface-variant relative z-10 line-clamp-2 ${!post.title ? 'mt-xs' : ''}`}>
-                  {post.desc}
-                </p>
-                
+                {post.title && <h4 className="font-title-lg text-title-lg font-bold text-on-background mt-sm relative z-10">{post.title}</h4>}
+                <p className={`font-body-md text-body-md text-on-surface-variant relative z-10 line-clamp-2 ${!post.title ? 'mt-xs' : ''}`}>{post.desc}</p>
                 <div className="flex flex-col gap-2 mt-sm relative z-10 bg-surface-container-lowest p-3 rounded-xl border border-outline-variant/30">
                   <div className="flex items-center gap-2 text-on-surface">
                     <span className="material-symbols-outlined text-[18px] text-tertiary">location_on</span>
@@ -340,7 +262,6 @@ export default function TournamentsPage() {
                     </div>
                   )}
                 </div>
-                
                 <div className="mt-auto pt-sm border-t border-outline-variant/30 flex justify-end relative z-10">
                   <button className="font-label-md text-label-md text-primary hover:text-primary-fixed-dim transition-colors flex items-center gap-1">
                     {post.type === 'tournament' ? 'Xem chi tiết' : 'Xem bài viết'} <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
@@ -348,35 +269,23 @@ export default function TournamentsPage() {
                 </div>
               </div>
             ))}
-
             {filteredPosts.length === 0 && (
               <div className="col-span-full py-xl text-center text-on-surface-variant flex flex-col items-center">
                 <span className="material-symbols-outlined text-[48px] mb-2 opacity-50">search_off</span>
                 <p>Không tìm thấy kết quả nào cho "{query}"</p>
               </div>
             )}
-            
-            {/* Infinity Scroll Target */}
             {displayCount < filteredPosts.length && (
               <div ref={observerTarget} className="col-span-full py-4 text-center">
                 <div className="inline-block w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
               </div>
             )}
-
           </div>
         </section>
       </div>
 
-      <TournamentDetailsModal 
-        isOpen={isModalOpen && selectedPost?.type === 'tournament'} 
-        onClose={() => setIsModalOpen(false)} 
-        postTitle={selectedPost?.title || 'Giải đấu'}
-      />
-      <MatchDetailsModal 
-        isOpen={isModalOpen && selectedPost?.type === 'match'} 
-        onClose={() => setIsModalOpen(false)} 
-        post={selectedPost}
-      />
+      <TournamentDetailsModal isOpen={isModalOpen && selectedPost?.type === 'tournament'} onClose={() => setIsModalOpen(false)} postTitle={selectedPost?.title || 'Giải đấu'} />
+      <MatchDetailsModal isOpen={isModalOpen && selectedPost?.type === 'match'} onClose={() => setIsModalOpen(false)} post={selectedPost} />
     </main>
   );
 }
