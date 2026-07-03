@@ -33,6 +33,13 @@ services:
     env: static
     buildCommand: npm install && npm run build --workspace=frontend-web
     staticPublishPath: apps/frontend-web/dist
+    envVars:
+      - key: VITE_API_URL
+        value: https://courtmate-7lc4.onrender.com
+      - key: VITE_GOOGLE_CLIENT_ID
+        value: 1095554139006-cf3l4fco2cf1paam6fgeahum0p4qmcj9.apps.googleusercontent.com
+      - key: VITE_GOOGLE_REDIRECT_URI
+        value: https://courtmate-1.onrender.com
     buildFilter:
       paths:
         - apps/frontend-web/**
