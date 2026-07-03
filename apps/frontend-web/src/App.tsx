@@ -10,6 +10,7 @@ import HostPendingApprovalsPage from './pages/HostPendingApprovalsPage';
 import HostConfirmedAthletesPage from './pages/HostConfirmedAthletesPage';
 import TournamentsPage from './pages/TournamentsPage';
 import ParticipantsPage from './pages/ParticipantsPage';
+import ProfilePage from './pages/ProfilePage';
 import CreateTournamentPage from './pages/CreateTournamentPage';
 import EventDetailPage from './pages/EventDetailPage';
 import AdminPage from './pages/AdminPage';
@@ -71,6 +72,7 @@ function App() {
               
               {/* All authenticated users */}
               <Route path="/tournaments" element={<ProtectedRoute allowedRoles={['user', 'host', 'admin']}><Layout><TournamentsPage /></Layout></ProtectedRoute>} />
+              <Route path="/profile" element={<ProtectedRoute allowedRoles={['user']}><Layout><ProfilePage /></Layout></ProtectedRoute>} />
             </Routes>
 
             {/* Global Animated Toast Notification */}
