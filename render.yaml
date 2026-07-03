@@ -6,11 +6,13 @@ services:
     plan: free # Sử dụng gói miễn phí của Render (hoặc thay đổi tùy nhu cầu)
     buildCommand: npm install && npm run build --workspace=backend
     startCommand: npm run start:prod --workspace=backend
+    autoDeploy: true
     buildFilter:
       paths:
         - apps/backend/**
         - package.json
         - package-lock.json
+        - render.yaml
     envVars:
       - key: PORT
         value: 3000
@@ -40,11 +42,13 @@ services:
         value: 1095554139006-cf3l4fco2cf1paam6fgeahum0p4qmcj9.apps.googleusercontent.com
       - key: VITE_GOOGLE_REDIRECT_URI
         value: https://courtmate-1.onrender.com
+    autoDeploy: true
     buildFilter:
       paths:
         - apps/frontend-web/**
         - package.json
         - package-lock.json
+        - render.yaml
     routes:
       # Định tuyến SPA: Chuyển toàn bộ yêu cầu về index.html để React Router xử lý
       - type: rewrite
