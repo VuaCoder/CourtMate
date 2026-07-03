@@ -12,8 +12,8 @@ export default function UserLayout({ children }: { children: React.ReactNode }) 
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    logout();
     navigate('/');
+    setTimeout(logout, 0);
   };
 
   return (

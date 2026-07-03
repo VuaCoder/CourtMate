@@ -185,7 +185,7 @@ export default function ParticipantsPage() {
   };
 
   return (
-    <>
+    <div className="space-y-xl animate-fade-in-up">
       <header className="mb-xl">
         <h1 className="font-headline-lg text-headline-lg font-bold text-on-background mb-xs">
           Vận động viên
@@ -621,6 +621,6 @@ export default function ParticipantsPage() {
           </div>
         </div>
       )}
-    </>
+    </div>
   );
 }

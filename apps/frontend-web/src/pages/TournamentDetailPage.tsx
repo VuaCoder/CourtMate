@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import RegistrationFormModal from '../components/RegistrationFormModal';
 
 export default function TournamentDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<'info' | 'bracket' | 'players'>('info');
+  const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
 
   // Giả lập dữ liệu giải đấu
   const tournament = {
@@ -77,7 +79,10 @@ export default function TournamentDetailPage() {
               Ban tổ chức: {tournament.organizer}
             </p>
           </div>
-          <button className="bg-primary text-on-primary px-8 py-3 rounded-xl font-title-lg text-title-lg shadow-lg hover:opacity-90 active:scale-95 transition-all whitespace-nowrap">
+          <button 
+            onClick={() => setIsRegisterModalOpen(true)}
+            className="bg-primary text-on-primary px-8 py-3 rounded-xl font-title-lg text-title-lg shadow-lg hover:opacity-90 active:scale-95 transition-all whitespace-nowrap"
+          >
             Đăng ký ngay
           </button>
         </div>
@@ -304,6 +309,17 @@ export default function TournamentDetailPage() {
           </div>
         </div>
       </div>
+
+      {isRegisterModalOpen && (
+        <RegistrationFormModal
+          isOpen={isRegisterModalOpen}
+          onClose={() => setIsRegisterModalOpen(false)}
+          tournamentId={Number(tournament.id) || 1}
+          tournamentTitle={tournament.title}
+          tournamentLevel="Yếu - Khá"
+          fee={tournament.fee}
+        />
+      )}
     </main>
   );
 }

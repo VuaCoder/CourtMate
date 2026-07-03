@@ -14,6 +14,7 @@ export function Header() {
   const navigate = useNavigate();
 
   const searchRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   const notifRef = useRef<HTMLDivElement>(null);
   const avatarRef = useRef<HTMLDivElement>(null);
 
@@ -76,8 +77,8 @@ export function Header() {
   }, []);
 
   const handleLogout = () => {
-    logout();
     navigate('/');
+    setTimeout(logout, 0);
   };
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -99,7 +100,11 @@ export function Header() {
   };
 
   return (
-    <header className="fixed top-0 w-full z-50 bg-white/80 dark:bg-inverse-surface/80 backdrop-blur-lg border-b border-primary/10 shadow-[0_4px_30px_rgba(0,104,95,0.03)] transition-all duration-300">
+    <header className={`fixed top-0 w-full z-50 transition-all duration-300 ${
+      isScrolled 
+        ? 'bg-white/95 dark:bg-inverse-surface/95 border-b border-outline-variant/30 shadow-[0_4px_30px_rgba(0,0,0,0.04)] backdrop-blur-lg' 
+        : 'bg-transparent border-transparent shadow-none backdrop-blur-none'
+    }`}>
       <div className="flex justify-between items-center max-w-7xl mx-auto px-margin-desktop py-3">
         <div className="flex items-center gap-10">
           <Link to="/" className="flex items-center gap-sm cursor-pointer" onClick={() => window.scrollTo({top: 0, behavior: 'smooth'})}>
@@ -144,41 +149,53 @@ export function Header() {
           ) : (
             <div className="flex items-center gap-md">
               {/* Search */}
-              <div ref={searchRef} className="hidden md:flex items-center relative mr-sm">
-                {/* Desktop static search bar */}
-                <form onSubmit={handleSearchSubmit} className="hidden lg:flex items-center w-[200px] bg-surface-container-low border border-outline-variant/30 rounded-full px-3 py-1.5 hover:border-primary/50 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/10 transition-all">
-                  <span className="material-symbols-outlined text-[18px] text-on-surface-variant mr-1.5 flex-shrink-0">search</span>
+              <div ref={searchRef} className="hidden md:flex items-center relative">
+                {/* Unified Click-to-Expand Search Bar (h-9, w-9 to w-64) */}
+                <form 
+                  onSubmit={handleSearchSubmit} 
+                  className={`flex items-center h-9 transition-all duration-300 ease-in-out overflow-hidden ${
+                    isSearchOpen 
+                      ? 'w-[260px] bg-surface-container-low border border-outline-variant/30 rounded-full px-3' 
+                      : 'w-9 bg-transparent border border-transparent rounded-full justify-center hover:bg-surface-variant/50 cursor-pointer'
+                  }`}
+                >
+                  <button 
+                    type="button" 
+                    onClick={() => {
+                      if (isSearchOpen) {
+                        if (searchQuery.trim()) {
+                          navigate(`/tournaments?q=${encodeURIComponent(searchQuery)}`);
+                        } else {
+                          setIsSearchOpen(false);
+                        }
+                      } else {
+                        setIsSearchOpen(true);
+                        setTimeout(() => inputRef.current?.focus(), 100);
+                      }
+                    }} 
+                    className="text-on-surface-variant hover:text-primary transition-colors flex items-center justify-center flex-shrink-0 outline-none w-8 h-8 rounded-full"
+                  >
+                    <span className="material-symbols-outlined text-[20px]">search</span>
+                  </button>
                   <input
+                    ref={inputRef}
                     type="text"
                     value={searchQuery}
                     onChange={handleSearchChange}
                     placeholder="Tìm giải đấu, kèo..."
-                    className="bg-transparent outline-none text-xs text-on-surface w-full placeholder:text-on-surface-variant/50"
-                  />
-                  <kbd className="hidden sm:inline-block px-1.5 py-0.5 text-[9px] font-sans font-semibold text-on-surface-variant/40 bg-surface border border-outline-variant/20 rounded-md shadow-sm ml-1.5 flex-shrink-0">⌘K</kbd>
-                </form>
-
-                {/* Tablet expandable search bar */}
-                <form onSubmit={handleSearchSubmit} className={`lg:hidden flex items-center overflow-hidden transition-all duration-300 ease-in-out ${isSearchOpen ? 'w-[200px] bg-surface-variant/30 rounded-full border border-outline-variant/50' : 'w-10'}`}>
-                  <button type="button" onClick={() => setIsSearchOpen(!isSearchOpen)} className="p-2 text-on-surface-variant hover:text-primary transition-colors rounded-full flex-shrink-0 z-10">
-                    <span className="material-symbols-outlined text-[20px]">search</span>
-                  </button>
-                  <input
-                    type="text"
-                    value={searchQuery}
-                    onChange={handleSearchChange}
-                    placeholder="Tìm kiếm..."
-                    className={`bg-transparent outline-none text-xs text-on-surface transition-all duration-300 ${isSearchOpen ? 'w-full px-2 opacity-100' : 'w-0 opacity-0'}`}
+                    className={`bg-transparent outline-none text-xs text-on-surface transition-all duration-300 ${
+                      isSearchOpen ? 'w-full pl-2 opacity-100' : 'w-0 opacity-0 pointer-events-none'
+                    } placeholder:text-on-surface-variant/50`}
                   />
                 </form>
               </div>
 
-              <div className="flex items-center gap-xs">
-                {/* Notifications */}
+              <div className="flex items-center">
+                {/* Notifications (h-9, w-9) */}
                 <div ref={notifRef} className="relative">
-                  <button onClick={() => setIsNotifOpen(!isNotifOpen)} className="group p-2 text-on-surface-variant hover:text-primary transition-colors rounded-full hover:bg-surface-variant/50 relative">
+                  <button onClick={() => setIsNotifOpen(!isNotifOpen)} className="group w-9 h-9 flex items-center justify-center text-on-surface-variant hover:text-primary transition-colors rounded-full hover:bg-surface-variant/50 relative">
                     <span className="material-symbols-outlined text-[20px] animate-bell-ring">notifications</span>
-                    <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-error rounded-full ring-2 ring-white"></span>
+                    <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-error rounded-full ring-2 ring-white"></span>
                   </button>
                   {isNotifOpen && (
                     <div className="absolute right-0 mt-2 w-[320px] bg-surface border border-outline-variant rounded-xl shadow-lg py-2 animate-fade-in-up z-50">
@@ -206,9 +223,9 @@ export function Header() {
                 </Link>
               )}
 
-              {/* Avatar Dropdown */}
-              <div ref={avatarRef} className="relative ml-sm">
-                <button onClick={() => setIsAvatarOpen(!isAvatarOpen)} className="w-8 h-8 rounded-full overflow-hidden border border-outline-variant/50 cursor-pointer hover:ring-4 hover:ring-primary/20 hover:border-primary transition-all flex-shrink-0 group">
+              {/* Avatar Dropdown (h-9, w-9) */}
+              <div ref={avatarRef} className="relative">
+                <button onClick={() => setIsAvatarOpen(!isAvatarOpen)} className="w-9 h-9 rounded-full overflow-hidden border border-outline-variant/50 cursor-pointer hover:ring-4 hover:ring-primary/20 hover:border-primary transition-all flex-shrink-0 group flex items-center justify-center">
                   <img alt="User Avatar" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" src="https://ui-avatars.com/api/?name=User&background=3b82f6&color=fff" />
                 </button>
                 {isAvatarOpen && (

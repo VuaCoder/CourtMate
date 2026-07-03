@@ -48,13 +48,13 @@ export default function ProfilePage() {
         message: 'Tài khoản đã được xoá khỏi phiên hiện tại.'
       }
     }));
-    logout();
     navigate('/');
+    setTimeout(logout, 0);
   };
 
   return (
     <main className="min-h-screen bg-background text-on-background">
-      <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 py-6 md:py-10">
+      <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 py-6 md:py-10 flex flex-col gap-6">
         <div className="mb-6">
           <p className="text-sm text-on-surface-variant">Tìm đồng đội chơi thể thao.</p>
           <h1 className="mt-2 text-3xl md:text-4xl font-black tracking-tight text-on-surface">Hồ sơ người dùng</h1>
@@ -89,7 +89,7 @@ export default function ProfilePage() {
           </div>
         </SectionCard>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mt-5">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
           <SectionCard title="Thông tin cá nhân" subtitle="Chỉnh sửa tên hiển thị và ảnh đại diện của bạn.">
             <div className="space-y-4">
               <label className="block">

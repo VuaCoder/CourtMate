@@ -11,7 +11,7 @@ export default function OrganizerSettings() {
   };
 
   return (
-    <>
+    <div className="space-y-xl animate-fade-in-up">
       <header className="mb-xl">
         <h2 className="font-headline-lg text-headline-lg text-on-surface mb-xs">Cài đặt Ban tổ chức</h2>
         <p className="font-body-md text-body-md text-on-surface-variant">Quản lý thông tin đơn vị, tài chính và cấu hình vận hành giải đấu của bạn.</p>
@@ -129,6 +129,6 @@ export default function OrganizerSettings() {
           )}
         </div>
       </div>
-    </>
+    </div>
   );
 }

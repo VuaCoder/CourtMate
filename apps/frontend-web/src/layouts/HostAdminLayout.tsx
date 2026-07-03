@@ -28,8 +28,8 @@ export default function HostAdminLayout({ children }: { children: React.ReactNod
   }, []);
 
   const handleLogout = () => {
-    logout();
     navigate('/');
+    setTimeout(logout, 0);
   };
 
   const isActive = (path: string) => {
@@ -94,7 +94,7 @@ export default function HostAdminLayout({ children }: { children: React.ReactNod
               Thống kê
             </Link>
           )}
-          {role === 'admin' && (
+          {isHostOrAdmin && (
             <Link to="/admin" className={navItemClass('/admin')}>
               <span className="material-symbols-outlined" style={{ fontVariationSettings: isActive('/admin') ? "'FILL' 1" : "'FILL' 0" }}>admin_panel_settings</span>
               Quản trị hệ thống
