@@ -13,7 +13,9 @@ import { CloudinaryModule } from './cloudinary/cloudinary.module';
     MongooseModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
-        uri: config.get<string>('MONGODB_URI') || 'mongodb://localhost:27017/courtmate',
+        uri:
+          config.get<string>('MONGODB_URI') ||
+          'mongodb://localhost:27017/courtmate',
       }),
     }),
     UsersModule,

@@ -11,13 +11,26 @@ export class UsersService {
     return this.userModel.findOne({ identifier }).exec();
   }
 
-  async create(userDto: { identifier: string; passwordHash: string; name?: string; role?: string }): Promise<UserDocument> {
+  async create(userDto: {
+    identifier: string;
+    passwordHash: string;
+    name?: string;
+    role?: string;
+  }): Promise<UserDocument> {
     const createdUser = new this.userModel(userDto);
     return createdUser.save();
   }
 
-  async findOrCreateGoogleUser(userDto: { identifier: string; name: string; avatarUrl?: string; googleId: string; role?: string }): Promise<UserDocument> {
-    let user = await this.userModel.findOne({ identifier: userDto.identifier }).exec();
+  async findOrCreateGoogleUser(userDto: {
+    identifier: string;
+    name: string;
+    avatarUrl?: string;
+    googleId: string;
+    role?: string;
+  }): Promise<UserDocument> {
+    let user = await this.userModel
+      .findOne({ identifier: userDto.identifier })
+      .exec();
     if (!user) {
       user = new this.userModel({
         identifier: userDto.identifier,
