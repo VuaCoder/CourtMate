@@ -39,7 +39,7 @@ services:
       - key: VITE_API_URL
         value: https://courtmate-backend.onrender.com
       - key: VITE_GOOGLE_CLIENT_ID
-        value: 863885147457-sh19titrqk9rhdf5d5af6vm3nqn9l9s9.apps.googleusercontent.com
+        value: 1095554139006-cf3l4fco2cf1paam6fgeahum0p4qmcj9.apps.googleusercontent.com
       - key: VITE_GOOGLE_REDIRECT_URI
         value: https://courtmate-frontend.onrender.com
     autoDeploy: true
