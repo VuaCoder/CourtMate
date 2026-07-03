@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useGoogleLogin } from '@react-oauth/google';
 import { useAuth } from '../context/AuthContext';
@@ -17,6 +17,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [selectedRole, setSelectedRole] = useState<UserRole>('host');
   const [error, setError] = useState('');
   const { login, isAuthenticated, role: authRole } = useAuth();
   const { showLoading, hideLoading } = useLoading();
@@ -35,32 +36,31 @@ export default function LoginPage() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    
+
     if (!identifier || !password) {
       setError('Vui lòng nhập đầy đủ thông tin');
       return;
     }
-    
+
     if (password.length < 6) {
       setError('Mật khẩu phải có ít nhất 6 ký tự');
       return;
     }
-    
+
     if (identifier.includes('@') && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(identifier)) {
       setError('Email không hợp lệ');
       return;
     }
 
+    if (!selectedRole) {
+      setError('Vui lòng chọn vai trò đăng nhập');
+      return;
+    }
+
     showLoading('Đang đăng nhập...');
-    // Mock backend role resolution
-    let finalRole: UserRole = 'user';
-    if (identifier.toLowerCase().includes('admin')) finalRole = 'admin';
-    else if (identifier.toLowerCase().includes('host')) finalRole = 'host';
-    
-    // Simulate API call
-    await new Promise(r => setTimeout(r, 800));
+    await new Promise((resolve) => setTimeout(resolve, 800));
     hideLoading();
-    login(finalRole);
+    login(selectedRole);
   };
 
   const handleGoogleLogin = useGoogleLogin({
@@ -70,11 +70,11 @@ export default function LoginPage() {
         const res = await fetch(`${API_URL}/auth/google`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ token: tokenResponse.access_token })
+          body: JSON.stringify({ token: tokenResponse.access_token, role: selectedRole }),
         });
-        
+
         if (res.ok) {
-          login('user'); // Defaulting Google login to user
+          login(selectedRole);
         } else {
           setError('Lỗi đăng nhập Google với server');
         }
@@ -92,27 +92,24 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex bg-surface-container-lowest antialiased relative overflow-hidden">
-      {/* ── Left Decorative Panel (desktop only) ── */}
       <div className="hidden lg:flex lg:w-[45%] xl:w-[50%] auth-gradient-panel relative items-center justify-center p-12 overflow-hidden">
-        {/* Floating blobs */}
         <div className="absolute top-[10%] left-[10%] w-64 h-64 bg-white/10 rounded-full blur-[80px] animate-blob" />
         <div className="absolute bottom-[15%] right-[5%] w-48 h-48 bg-white/8 rounded-full blur-[60px] animate-blob" style={{ animationDelay: '4s' }} />
         <div className="absolute top-[50%] right-[20%] w-32 h-32 bg-white/5 rounded-full blur-[40px] animate-float" />
-
-        {/* Decorative grid pattern */}
         <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'radial-gradient(circle, white 1px, transparent 1px)', backgroundSize: '32px 32px' }} />
 
-        {/* Content */}
         <div className="relative z-10 max-w-md text-white">
           <div className="animate-fade-in-up">
             <div className="flex items-center gap-3 mb-8">
               <div className="w-14 h-14 bg-white/15 backdrop-blur-xl rounded-2xl flex items-center justify-center">
-                <span className="material-symbols-outlined text-[32px] text-white" style={{ fontVariationSettings: "'FILL' 1" }}>sports_tennis</span>
+                <span className="material-symbols-outlined text-[32px] text-white" style={{ fontVariationSettings: "'FILL' 1" }}>
+                  sports_tennis
+                </span>
               </div>
               <h1 className="font-headline-lg text-headline-lg font-bold tracking-tight">CourtMate</h1>
             </div>
           </div>
-          
+
           <h2 className="font-headline-lg text-headline-lg font-bold mb-4 animate-fade-in-up delay-100">
             Chào mừng trở lại!
           </h2>
@@ -120,7 +117,6 @@ export default function LoginPage() {
             Nền tảng quản lý giải đấu cầu lông chuyên nghiệp. Đăng nhập để tiếp tục quản lý các giải đấu của bạn.
           </p>
 
-          {/* Feature highlights */}
           <div className="mt-10 space-y-4 animate-fade-in-up delay-300">
             {[
               { icon: 'emoji_events', text: 'Quản lý giải đấu dễ dàng' },
@@ -129,7 +125,9 @@ export default function LoginPage() {
             ].map((item, i) => (
               <div key={i} className="flex items-center gap-3 text-white/90">
                 <div className="w-9 h-9 bg-white/15 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <span className="material-symbols-outlined text-[20px]" style={{ fontVariationSettings: "'FILL' 1" }}>{item.icon}</span>
+                  <span className="material-symbols-outlined text-[20px]" style={{ fontVariationSettings: "'FILL' 1" }}>
+                    {item.icon}
+                  </span>
                 </div>
                 <span className="font-body-md text-body-md">{item.text}</span>
               </div>
@@ -138,13 +136,10 @@ export default function LoginPage() {
         </div>
       </div>
 
-      {/* ── Right Form Panel ── */}
       <div className="flex-1 flex items-center justify-center p-6 md:p-12 relative">
-        {/* Subtle background blobs on mobile */}
         <div className="absolute top-[-15%] right-[-10%] w-[50%] h-[50%] bg-primary/5 rounded-full blur-[100px] pointer-events-none lg:hidden" />
         <div className="absolute bottom-[-10%] left-[-10%] w-[40%] h-[40%] bg-secondary/5 rounded-full blur-[80px] pointer-events-none lg:hidden" />
 
-        {/* Back link */}
         <div className="absolute top-6 left-6 z-50">
           <Link to="/" className="flex items-center gap-1 text-on-surface-variant hover:text-primary transition-colors font-label-md text-sm group">
             <span className="material-symbols-outlined text-[20px] group-hover:-translate-x-0.5 transition-transform">arrow_back</span>
@@ -152,22 +147,50 @@ export default function LoginPage() {
           </Link>
         </div>
 
-        <div className="w-full max-w-[420px] mx-auto animate-slide-in-right">
-          {/* Mobile logo */}
-          <div className="flex items-center justify-center gap-2 mb-8 lg:hidden animate-fade-in-up">
-            <span className="material-symbols-outlined text-[28px] text-primary" style={{ fontVariationSettings: "'FILL' 1" }}>sports_tennis</span>
+        <div className="w-full max-w-[460px] mx-auto animate-slide-in-right">
+          <div className="flex items-center justify-center gap-2 mb-6 lg:hidden animate-fade-in-up">
+            <span className="material-symbols-outlined text-[28px] text-primary" style={{ fontVariationSettings: "'FILL' 1" }}>
+              sports_tennis
+            </span>
             <h1 className="font-headline-md text-headline-md text-primary font-bold tracking-tight">CourtMate</h1>
           </div>
 
-          {/* Header */}
-          <div className="mb-6 animate-fade-in-up delay-100">
+          <div className="mb-5 animate-fade-in-up delay-100">
             <h2 className="font-headline-lg text-headline-lg text-on-surface font-bold mb-1">Đăng nhập</h2>
             <p className="font-body-md text-body-md text-on-surface-variant">Nhập thông tin đăng nhập của bạn.</p>
           </div>
 
+          <div className="mb-5 animate-fade-in-up delay-200">
+            <label className="block font-label-md text-label-md text-on-surface mb-2">Chọn vai trò đăng nhập</label>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              {ROLES.map((role) => {
+                const active = selectedRole === role.value;
+                return (
+                  <button
+                    key={role.value}
+                    type="button"
+                    onClick={() => setSelectedRole(role.value)}
+                    className={`role-card items-start text-left !gap-3 !p-3.5 ${active ? 'active' : ''}`}
+                  >
+                    <div className={`role-icon w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 transition-colors duration-300 ${active ? '' : 'bg-surface-container-low text-on-surface-variant'}`}>
+                      <span className="material-symbols-outlined text-[22px]" style={{ fontVariationSettings: active ? "'FILL' 1" : "'FILL' 0" }}>
+                        {role.icon}
+                      </span>
+                    </div>
+                    <div>
+                      <div className={`font-label-md text-[12px] font-semibold transition-colors ${active ? 'text-primary' : 'text-on-surface'}`}>
+                        {role.label}
+                      </div>
+                      <div className="font-body-sm text-[11px] text-on-surface-variant leading-tight mt-0.5">
+                        {role.desc}
+                      </div>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
 
-          
-          {/* ── Form ── */}
           <form className="space-y-4 animate-fade-in-up delay-300" onSubmit={handleLogin}>
             {error && (
               <div className="p-3 text-sm text-error bg-error-container/60 backdrop-blur rounded-xl font-medium flex items-center gap-2 animate-scale-in">
@@ -176,7 +199,6 @@ export default function LoginPage() {
               </div>
             )}
 
-            {/* Email / Phone */}
             <div>
               <label className="block font-label-md text-label-md text-on-surface mb-1.5" htmlFor="login-identifier">
                 Email hoặc Số điện thoại <span className="text-error">*</span>
@@ -197,8 +219,7 @@ export default function LoginPage() {
                 />
               </div>
             </div>
-            
-            {/* Password */}
+
             <div>
               <label className="block font-label-md text-label-md text-on-surface mb-1.5" htmlFor="login-password">
                 Mật khẩu <span className="text-error">*</span>
@@ -222,12 +243,13 @@ export default function LoginPage() {
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                 >
-                  <span className="material-symbols-outlined text-[20px]">{showPassword ? 'visibility' : 'visibility_off'}</span>
+                  <span className="material-symbols-outlined text-[20px]">
+                    {showPassword ? 'visibility' : 'visibility_off'}
+                  </span>
                 </button>
               </div>
             </div>
-            
-            {/* Options Row */}
+
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <input
@@ -245,13 +267,15 @@ export default function LoginPage() {
               <Link
                 className="font-body-sm text-body-sm text-primary hover:text-primary-container font-semibold transition-colors"
                 to="#"
-                onClick={(e) => { e.preventDefault(); alert('Tính năng Khôi phục mật khẩu đang phát triển'); }}
+                onClick={(e) => {
+                  e.preventDefault();
+                  alert('Tính năng Khôi phục mật khẩu đang phát triển');
+                }}
               >
                 Quên mật khẩu?
               </Link>
             </div>
-            
-            {/* Submit Button */}
+
             <button
               className="w-full flex justify-center items-center gap-2 py-3 px-4 rounded-xl shadow-sm font-label-md text-label-md text-on-primary bg-primary hover:bg-primary-container hover:text-on-primary-container focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all duration-200 active:scale-[0.98] mt-2"
               type="submit"
@@ -260,8 +284,7 @@ export default function LoginPage() {
               Đăng nhập
             </button>
           </form>
-          
-          {/* Divider */}
+
           <div className="my-6 relative animate-fade-in-up delay-400">
             <div className="absolute inset-0 flex items-center">
               <div className="w-full border-t border-outline-variant/40" />
@@ -270,8 +293,7 @@ export default function LoginPage() {
               <span className="px-3 bg-surface-container-lowest font-body-sm text-body-sm text-outline">Hoặc tiếp tục với</span>
             </div>
           </div>
-          
-          {/* Google Login */}
+
           <div className="animate-fade-in-up delay-500">
             <button
               className="w-full flex items-center justify-center gap-2.5 py-2.5 px-4 border border-outline-variant/40 rounded-xl bg-white/80 hover:bg-white hover:shadow-md font-label-md text-label-md text-on-surface transition-all duration-200 active:scale-[0.98] group"
@@ -287,8 +309,7 @@ export default function LoginPage() {
               Tiếp tục với Google
             </button>
           </div>
-          
-          {/* Footer */}
+
           <p className="mt-8 text-center font-body-sm text-body-sm text-on-surface-variant animate-fade-in-up delay-600">
             Chưa có tài khoản?{' '}
             <Link className="font-semibold text-primary hover:text-primary-container transition-colors" to="/signup">

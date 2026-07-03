@@ -1,20 +1,58 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
+
+type ParticipantStatus = 'approved' | 'pending' | 'rejected';
+
+const participants = [
+  { id: 1, name: 'Nguyễn Văn An', phone: '0901234567', email: 'an.nguyen@email.com', tournament: 'Giải Vô địch Quận Hải Châu', category: 'Đơn Nam', status: 'approved' as ParticipantStatus, date: '12 Th9 2024' },
+  { id: 2, name: 'Trần Thị Bình', phone: '0912345678', email: 'binh.tran@email.com', tournament: 'Giải Cầu lông Đà Nẵng', category: 'Đôi Nữ', status: 'pending' as ParticipantStatus, date: '13 Th9 2024' },
+  { id: 3, name: 'Lê Hoàng Tâm', phone: '0923456789', email: 'tam.le@email.com', tournament: 'Giải Vô địch Quận Hải Châu', category: 'Đôi Nam', status: 'rejected' as ParticipantStatus, date: '10 Th9 2024' },
+  { id: 4, name: 'Phạm Ngọc Mai', phone: '0934567890', email: 'mai.pham@email.com', tournament: 'Series Cầu lông Mùa đông', category: 'Đơn Nữ', status: 'approved' as ParticipantStatus, date: '14 Th9 2024' },
+  { id: 5, name: 'Vũ Quốc Bảo', phone: '0945678901', email: 'bao.vu@email.com', tournament: 'Giải Cầu lông Đà Nẵng', category: 'Đôi Nam Nữ', status: 'pending' as ParticipantStatus, date: '15 Th9 2024' },
+];
+
+const tabs: Array<{ value: 'all' | ParticipantStatus; label: string; className: string }> = [
+  { value: 'all', label: 'Tất cả', className: 'bg-surface-variant text-on-surface font-bold' },
+  { value: 'pending', label: 'Chờ duyệt', className: 'bg-tertiary-container text-on-tertiary-container font-bold' },
+  { value: 'approved', label: 'Đã duyệt', className: 'bg-[#e8f5e9] text-[#2e7d32] font-bold' },
+  { value: 'rejected', label: 'Từ chối', className: 'bg-error-container text-error font-bold' },
+];
 
 export default function ParticipantsPage() {
-  const [activeTab, setActiveTab] = useState('all');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const initialStatus = (searchParams.get('status') as 'all' | ParticipantStatus | null) || 'all';
+  const [activeTab, setActiveTab] = useState<'all' | ParticipantStatus>(initialStatus);
+  const [query, setQuery] = useState(searchParams.get('q') || '');
 
-  // Dữ liệu giả lập
-  const participants = [
-    { id: 1, name: 'Nguyễn Văn An', phone: '0901234567', email: 'an.nguyen@email.com', tournament: 'Giải Vô địch Quận Hải Châu', category: 'Đơn Nam', status: 'approved', date: '12 Th9 2024' },
-    { id: 2, name: 'Trần Thị Bình', phone: '0912345678', email: 'binh.tran@email.com', tournament: 'Giải Cầu lông Đà Nẵng', category: 'Đôi Nữ', status: 'pending', date: '13 Th9 2024' },
-    { id: 3, name: 'Lê Hoàng Tâm', phone: '0923456789', email: 'tam.le@email.com', tournament: 'Giải Vô địch Quận Hải Châu', category: 'Đôi Nam', status: 'rejected', date: '10 Th9 2024' },
-    { id: 4, name: 'Phạm Ngọc Mai', phone: '0934567890', email: 'mai.pham@email.com', tournament: 'Series Cầu lông Mùa đông', category: 'Đơn Nữ', status: 'approved', date: '14 Th9 2024' },
-    { id: 5, name: 'Vũ Quốc Bảo', phone: '0945678901', email: 'bao.vu@email.com', tournament: 'Giải Cầu lông Đà Nẵng', category: 'Đôi Nam Nữ', status: 'pending', date: '15 Th9 2024' },
-  ];
+  const filteredParticipants = useMemo(() => {
+    return participants.filter((p) => {
+      const matchesTab = activeTab === 'all' ? true : p.status === activeTab;
+      const search = query.trim().toLowerCase();
+      const matchesQuery = !search
+        ? true
+        : [p.name, p.phone, p.email, p.tournament, p.category]
+            .join(' ')
+            .toLowerCase()
+            .includes(search);
+      return matchesTab && matchesQuery;
+    });
+  }, [activeTab, query]);
 
-  const filteredParticipants = activeTab === 'all' 
-    ? participants 
-    : participants.filter(p => p.status === activeTab);
+  const setTab = (tab: 'all' | ParticipantStatus) => {
+    setActiveTab(tab);
+    const next = new URLSearchParams(searchParams);
+    if (tab === 'all') next.delete('status');
+    else next.set('status', tab);
+    setSearchParams(next);
+  };
+
+  const onSearchChange = (value: string) => {
+    setQuery(value);
+    const next = new URLSearchParams(searchParams);
+    if (value.trim()) next.set('q', value);
+    else next.delete('q');
+    setSearchParams(next);
+  };
 
   return (
     <>
@@ -23,7 +61,6 @@ export default function ParticipantsPage() {
         <p className="font-body-md text-body-md text-on-surface-variant">Quản lý danh sách đăng ký và trạng thái duyệt hồ sơ của các vận động viên.</p>
       </header>
 
-      {/* Metrics Banner */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-md mb-lg">
         <div className="bg-surface-container-lowest p-md rounded-xl border border-outline-variant/30 flex flex-col justify-center items-center text-center shadow-sm">
           <span className="font-label-md text-on-surface-variant uppercase tracking-wider mb-1">Tổng cộng</span>
@@ -44,39 +81,36 @@ export default function ParticipantsPage() {
       </div>
 
       <div className="bg-white/60 backdrop-blur-xl border border-white/50 shadow-[0_8px_32px_rgba(0,0,0,0.04)] rounded-3xl overflow-hidden flex flex-col">
-        {/* Toolbar */}
         <div className="p-4 border-b border-white/40 flex flex-col md:flex-row justify-between items-center gap-4 bg-white/40">
-          <div className="flex items-center gap-2 w-full md:w-auto">
-            <button 
-              className={`px-4 py-2 rounded-lg font-label-md transition-colors ${activeTab === 'all' ? 'bg-surface-variant text-on-surface font-bold' : 'text-on-surface-variant hover:bg-surface-variant/50'}`}
-              onClick={() => setActiveTab('all')}
-            >Tất cả</button>
-            <button 
-              className={`px-4 py-2 rounded-lg font-label-md transition-colors ${activeTab === 'pending' ? 'bg-tertiary-container text-on-tertiary-container font-bold' : 'text-on-surface-variant hover:bg-surface-variant/50'}`}
-              onClick={() => setActiveTab('pending')}
-            >Chờ duyệt</button>
-            <button 
-              className={`px-4 py-2 rounded-lg font-label-md transition-colors ${activeTab === 'approved' ? 'bg-[#e8f5e9] text-[#2e7d32] font-bold' : 'text-on-surface-variant hover:bg-surface-variant/50'}`}
-              onClick={() => setActiveTab('approved')}
-            >Đã duyệt</button>
+          <div className="flex items-center gap-2 w-full md:w-auto flex-wrap">
+            {tabs.map((tab) => (
+              <button
+                key={tab.value}
+                className={`px-4 py-2 rounded-lg font-label-md transition-colors ${activeTab === tab.value ? tab.className : 'text-on-surface-variant hover:bg-surface-variant/50'}`}
+                onClick={() => setTab(tab.value)}
+              >
+                {tab.label}
+              </button>
+            ))}
           </div>
 
           <div className="flex gap-3 w-full md:w-auto">
             <div className="relative flex-1 md:w-64">
               <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px]">search</span>
-              <input type="text" placeholder="Tìm tên, SĐT..." className="w-full pl-9 pr-3 py-2 text-sm bg-surface rounded-lg border border-outline-variant focus:border-primary outline-none" />
+              <input
+                type="text"
+                value={query}
+                onChange={(e) => onSearchChange(e.target.value)}
+                placeholder="Tìm tên, SĐT..."
+                className="w-full pl-9 pr-3 py-2 text-sm bg-surface rounded-lg border border-outline-variant focus:border-primary outline-none"
+              />
             </div>
-            <button className="flex items-center gap-2 px-3 py-2 border border-outline-variant rounded-lg text-on-surface hover:bg-surface-variant transition-colors font-label-md shadow-sm">
-              <span className="material-symbols-outlined text-[18px]">filter_list</span>
-              Lọc
-            </button>
             <button className="flex items-center gap-2 px-3 py-2 border border-outline-variant rounded-lg text-on-surface hover:bg-surface-variant transition-colors font-label-md shadow-sm" title="Xuất CSV">
               <span className="material-symbols-outlined text-[18px]">download</span>
             </button>
           </div>
         </div>
 
-        {/* Data Table */}
         <div className="overflow-x-auto w-full">
           <table className="w-full text-left border-collapse min-w-[800px]">
             <thead className="bg-surface-container/50">
@@ -91,7 +125,7 @@ export default function ParticipantsPage() {
               </tr>
             </thead>
             <tbody className="font-body-sm text-on-surface bg-surface-container-lowest">
-              {filteredParticipants.map(p => (
+              {filteredParticipants.map((p) => (
                 <tr key={p.id} className="border-b border-outline-variant/20 hover:bg-surface-variant/30 transition-colors group">
                   <td className="py-4 px-5"><input type="checkbox" className="rounded text-primary focus:ring-primary" /></td>
                   <td className="py-4 px-4">
@@ -135,10 +169,9 @@ export default function ParticipantsPage() {
             </tbody>
           </table>
         </div>
-        
-        {/* Pagination */}
+
         <div className="p-4 border-t border-white/40 bg-white/40 flex justify-between items-center text-sm text-on-surface-variant">
-          <div>Hiển thị 1-5 trên tổng 1,248</div>
+          <div>Hiển thị {filteredParticipants.length} trên tổng {participants.length}</div>
           <div className="flex items-center gap-2">
             <button className="p-1 rounded hover:bg-surface-variant disabled:opacity-50" disabled><span className="material-symbols-outlined">chevron_left</span></button>
             <button className="w-8 h-8 rounded-full bg-primary text-on-primary font-bold">1</button>
