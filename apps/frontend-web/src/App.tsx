@@ -12,6 +12,7 @@ import TournamentsPage from './pages/TournamentsPage';
 import ParticipantsPage from './pages/ParticipantsPage';
 import CreateTournamentPage from './pages/CreateTournamentPage';
 import EventDetailPage from './pages/EventDetailPage';
+import AdminPage from './pages/AdminPage';
 import Layout from './components/Layout';
 import LoadingScreen, { LoadingOverlay } from './components/LoadingScreen';
 import { AuthProvider } from './context/AuthContext';
@@ -66,6 +67,7 @@ function App() {
               <Route path="/host/pending-approvals" element={<ProtectedRoute allowedRoles={['host', 'admin']}><Layout><HostPendingApprovalsPage /></Layout></ProtectedRoute>} />
               <Route path="/host/confirmed-athletes" element={<ProtectedRoute allowedRoles={['host', 'admin']}><Layout><HostConfirmedAthletesPage /></Layout></ProtectedRoute>} />
               <Route path="/event/:eventId" element={<ProtectedRoute allowedRoles={['host', 'admin']}><Layout><EventDetailPage /></Layout></ProtectedRoute>} />
+              <Route path="/admin" element={<ProtectedRoute allowedRoles={['admin']}><Layout><AdminPage /></Layout></ProtectedRoute>} />
               
               {/* All authenticated users */}
               <Route path="/tournaments" element={<ProtectedRoute allowedRoles={['user', 'host', 'admin']}><Layout><TournamentsPage /></Layout></ProtectedRoute>} />
