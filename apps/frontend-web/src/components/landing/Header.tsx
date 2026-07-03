@@ -168,7 +168,7 @@ export function Header() {
               {/* Avatar Dropdown */}
               <div ref={avatarRef} className="relative ml-sm">
                 <button onClick={() => setIsAvatarOpen(!isAvatarOpen)} className="w-8 h-8 rounded-full overflow-hidden border border-outline-variant cursor-pointer hover:ring-2 hover:ring-primary transition-all flex-shrink-0">
-                  <img alt="User Avatar" className="w-full h-full object-cover" src="https://ui-avatars.com/api/?name=User&background=3b82f6&color=fff" />
+                  <img alt="User Avatar" className="w-full h-full object-cover" src={`https://ui-avatars.com/api/?name=${encodeURIComponent(userName)}&background=3b82f6&color=fff`} />
                 </button>
                 {isAvatarOpen && (
                   <div className="absolute right-0 mt-2 w-48 bg-surface border border-outline-variant rounded-xl shadow-lg py-2 animate-fade-in-up z-50 overflow-hidden">

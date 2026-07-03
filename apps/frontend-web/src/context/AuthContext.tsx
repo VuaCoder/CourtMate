@@ -6,8 +6,9 @@ export type UserRole = 'admin' | 'user' | 'host' | null;
 interface AuthContextType {
   role: UserRole;
   userName: string;
+  email: string;
   isAuthenticated: boolean;
-  login: (role: UserRole) => void;
+  login: (role: UserRole, userData?: { userName?: string; email?: string }) => void;
   logout: () => void;
 }
 
@@ -16,25 +17,34 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [role, setRole] = useState<UserRole>(null);
   const [userName, setUserName] = useState<string>('Khách');
+  const [email, setEmail] = useState<string>('');
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const navigate = useNavigate();
 
   useEffect(() => {
     const savedRole = localStorage.getItem('courtmate_role') as UserRole;
+    const savedName = localStorage.getItem('courtmate_user_name');
+    const savedEmail = localStorage.getItem('courtmate_user_email');
     if (savedRole) {
       setRole(savedRole);
-      setUserName(savedRole === 'admin' ? 'Quản trị viên' : savedRole === 'host' ? 'Chủ sự kiện' : 'Hoàng Phúc');
+      setUserName(savedName || (savedRole === 'admin' ? 'Quản trị viên' : savedRole === 'host' ? 'Chủ sự kiện' : 'Khách'));
+      setEmail(savedEmail || '');
       setIsAuthenticated(true);
     }
   }, []);
 
-  const login = (selectedRole: UserRole) => {
+  const login = (selectedRole: UserRole, userData?: { userName?: string; email?: string }) => {
     setRole(selectedRole);
-    setUserName(selectedRole === 'admin' ? 'Quản trị viên' : selectedRole === 'host' ? 'Chủ sự kiện' : 'Hoàng Phúc');
+    const nextUserName = userData?.userName || (selectedRole === 'admin' ? 'Quản trị viên' : selectedRole === 'host' ? 'Chủ sự kiện' : 'Khách');
+    const nextEmail = userData?.email || '';
+    setUserName(nextUserName);
+    setEmail(nextEmail);
     setIsAuthenticated(true);
     if (selectedRole) {
       localStorage.setItem('courtmate_role', selectedRole);
     }
+    localStorage.setItem('courtmate_user_name', nextUserName);
+    localStorage.setItem('courtmate_user_email', nextEmail);
     
     // Redirect based on role
     if (selectedRole === 'admin' || selectedRole === 'host') {
@@ -47,13 +57,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const logout = () => {
     setRole(null);
     setUserName('Khách');
+    setEmail('');
     setIsAuthenticated(false);
     localStorage.removeItem('courtmate_role');
+    localStorage.removeItem('courtmate_user_name');
+    localStorage.removeItem('courtmate_user_email');
     navigate('/login');
   };
 
   return (
-    <AuthContext.Provider value={{ role, userName, isAuthenticated, login, logout }}>
+    <AuthContext.Provider value={{ role, userName, email, isAuthenticated, login, logout }}>
       {children}
     </AuthContext.Provider>
   );
