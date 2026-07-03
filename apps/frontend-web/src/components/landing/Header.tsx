@@ -213,10 +213,18 @@ export function Header() {
                 </button>
                 {isAvatarOpen && (
                   <div className="absolute right-0 mt-2 w-48 bg-surface border border-outline-variant rounded-xl shadow-lg py-2 animate-fade-in-up z-50 overflow-hidden">
-                    <button className="w-full text-left px-4 py-2 text-sm text-on-surface hover:bg-surface-variant/30 flex items-center gap-2">
-                      <span className="material-symbols-outlined text-[18px]">settings</span>
-                      Cài đặt
-                    </button>
+                    {role === 'user' && (
+                      <button onClick={() => { navigate('/profile'); setIsAvatarOpen(false); }} className="w-full text-left px-4 py-2 text-sm text-on-surface hover:bg-surface-variant/30 flex items-center gap-2">
+                        <span className="material-symbols-outlined text-[18px]">person</span>
+                        Hồ sơ
+                      </button>
+                    )}
+                    {role !== 'user' && (
+                      <button onClick={() => { navigate('/settings'); setIsAvatarOpen(false); }} className="w-full text-left px-4 py-2 text-sm text-on-surface hover:bg-surface-variant/30 flex items-center gap-2">
+                        <span className="material-symbols-outlined text-[18px]">settings</span>
+                        Cài đặt
+                      </button>
+                    )}
                     <button onClick={handleLogout} className="w-full text-left px-4 py-2 text-sm text-error hover:bg-error/10 flex items-center gap-2 transition-colors">
                       <span className="material-symbols-outlined text-[18px]">logout</span>
                       Đăng xuất
