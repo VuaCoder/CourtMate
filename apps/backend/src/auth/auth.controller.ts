@@ -1,4 +1,11 @@
-import { Controller, Post, Body, UnauthorizedException, HttpException, HttpStatus } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  UnauthorizedException,
+  HttpException,
+  HttpStatus,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
 
 @Controller('auth')
@@ -7,7 +14,10 @@ export class AuthController {
 
   @Post('login')
   async login(@Body() body: { identifier: string; password: string }) {
-    const user = await this.authService.validateUser(body.identifier, body.password);
+    const user = await this.authService.validateUser(
+      body.identifier,
+      body.password,
+    );
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
     }
@@ -15,15 +25,34 @@ export class AuthController {
   }
 
   @Post('register')
-  async register(@Body() body: { identifier: string; password: string; name?: string; role?: string }) {
+  async register(
+    @Body()
+    body: {
+      identifier: string;
+      password: string;
+      name?: string;
+      role?: string;
+    },
+  ) {
     try {
-      const tokenResponse = await this.authService.register(body.identifier, body.password, body.name, body.role);
+      const tokenResponse = await this.authService.register(
+        body.identifier,
+        body.password,
+        body.name,
+        body.role,
+      );
       return { message: 'User registered successfully', ...tokenResponse };
     } catch (error: any) {
       if (error.code === 11000) {
-        throw new HttpException('Identifier already exists', HttpStatus.CONFLICT);
+        throw new HttpException(
+          'Identifier already exists',
+          HttpStatus.CONFLICT,
+        );
       }
-      throw new HttpException('Registration failed', HttpStatus.INTERNAL_SERVER_ERROR);
+      throw new HttpException(
+        'Registration failed',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 

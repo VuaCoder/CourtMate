@@ -9,6 +9,7 @@ import HostTournamentsPage from './pages/HostTournamentsPage';
 import HostPendingApprovalsPage from './pages/HostPendingApprovalsPage';
 import HostConfirmedAthletesPage from './pages/HostConfirmedAthletesPage';
 import TournamentsPage from './pages/TournamentsPage';
+import TournamentDetailPage from './pages/TournamentDetailPage';
 import ParticipantsPage from './pages/ParticipantsPage';
 import ProfilePage from './pages/ProfilePage';
 import CreateTournamentPage from './pages/CreateTournamentPage';
@@ -73,6 +74,7 @@ function App() {
               {/* All authenticated users */}
               <Route path="/tournaments" element={<ProtectedRoute allowedRoles={['user', 'host', 'admin']}><Layout><TournamentsPage /></Layout></ProtectedRoute>} />
               <Route path="/profile" element={<ProtectedRoute allowedRoles={['user']}><Layout><ProfilePage /></Layout></ProtectedRoute>} />
+              <Route path="/tournaments/:id" element={<ProtectedRoute allowedRoles={['user', 'host', 'admin']}><Layout><TournamentDetailPage /></Layout></ProtectedRoute>} />
             </Routes>
 
             {/* Global Animated Toast Notification */}

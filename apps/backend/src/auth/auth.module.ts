@@ -12,7 +12,9 @@ import { ConfigService } from '@nestjs/config';
       global: true,
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
-        secret: config.get<string>('JWT_SECRET') || 'courtmate-secret-key-development',
+        secret:
+          config.get<string>('JWT_SECRET') ||
+          'courtmate-secret-key-development',
         signOptions: { expiresIn: '7d' },
       }),
     }),

@@ -1,139 +1,167 @@
-import React, { useState, useEffect, useRef } from "react";
-import { useSearchParams } from "react-router-dom";
-import DatePicker from "react-datepicker";
-import "react-datepicker/dist/react-datepicker.css";
-import { useAuth } from "../context/AuthContext";
-import TournamentDetailsModal from "../components/TournamentDetailsModal";
-import MatchDetailsModal from "../components/MatchDetailsModal";
+import React, { useState, useEffect, useRef } from 'react';
+import { Link, useSearchParams, useNavigate } from 'react-router-dom';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
+import { useAuth } from '../context/AuthContext';
+import TournamentDetailsModal from '../components/TournamentDetailsModal';
+import MatchDetailsModal from '../components/MatchDetailsModal';
 
-const COURTS = [
-  "Cung Thể Thao Tiên Sơn",
-  "Sân Cầu Lông Kỳ Đồng",
-  "Sân Tuyến Sơn",
-  "Sân Thanh Khê",
-  "Sân Hoà Xuân",
-  "Sân Bế Văn Đàn",
+const COURTS = ['Cung Thể Thao Tiên Sơn', 'Sân Cầu Lông Kỳ Đồng', 'Sân Tuyên Sơn', 'Sân Tuyên Sơn Pickleball', 'Sân Cầu Lông Pinpon', 'Sân Lâm Gia'];
+
+const CAROUSEL_SLIDES = [
+  {
+    id: 1,
+    title: 'Giải Cầu Lông Đà Nẵng Open 2026',
+    subtitle: 'GIẢI ĐẤU LỚN NHẤT NĂM 🏆',
+    description: 'Quy tụ hơn 200 vận động viên chuyên nghiệp & phong trào tranh tài cúp vô địch và tổng giải thưởng lên tới 50 triệu đồng.',
+    image: 'https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?auto=format&fit=crop&q=80&w=1200&h=400',
+    sport: 'badminton',
+    sportLabel: 'Cầu lông',
+    link: '/tournaments/1'
+  },
+  {
+    id: 3,
+    title: 'Giải Pickleball Đôi Nam Nữ Thanh Khê 2026',
+    subtitle: 'SỰ KIỆN NÓNG TUẦN NÀY 🔥',
+    description: 'Sân chơi giao lưu Pickleball lớn nhất khu vực Thanh Khê. Đăng ký theo cặp nam nữ trước ngày 30/08 để nhận ưu đãi lệ phí.',
+    image: 'https://images.unsplash.com/photo-1611566144960-4f7b1376a591?auto=format&fit=crop&q=80&w=1200&h=400',
+    sport: 'pickleball',
+    sportLabel: 'Pickleball',
+    link: '/tournaments/3'
+  }
+];
+
+const QUICK_TAGS = [
+  { label: 'Tất cả giải đấu 🏆', action: 'all_tournaments' },
+  { label: 'Đang mở đăng ký 🟢', action: 'open_registration' },
+  { label: 'Sân Tiên Sơn 🏟️', action: 'court_tienson' },
+  { label: 'Pickleball HOT 🔥', action: 'pickleball_hot' },
+  { label: 'Cần người gấp ⏰', action: 'need_players' }
 ];
 
 const generateMockPosts = () => {
   const posts = [
     {
       id: 1,
-      type: "tournament",
-      authorName: "CLB Đà Nẵng Open",
-      authorAvatar:
-        "https://lh3.googleusercontent.com/aida-public/AB6AXuANI1x_H2RdY7olRA7qX1WUUIfIQwHoIaH4XrzOH4c6xfkVkEVxoG0ydU0Eb_kSKsKTJ_ZEeb5_yK1xsS4WcB-CcZCY5gaT6_hCC0Mfgw49LUIEktD8ohKdrkEG-bbUKpyZecwlZSsl4PnlLXJdb5RX45pd-wpK12JQDpLJtkL3-aE8WkFUaTqt_tUkgl9CuWxYUFyiF7C1_TJACMEvJjnWRT41ersXAcDWf2jWblqU8X5Y3mbJ8HQKxA",
-      postedTime: "Đăng 2 giờ trước",
-      statusText: "Đang mở",
-      title: "Giải Cầu Lông Đà Nẵng Open 2026",
-      desc: "Giải đấu phong trào quy mô lớn nhất năm dành cho các tay vợt bán chuyên và phong trào.",
-      location: "Cung Thể Thao Tiên Sơn",
-      dateStr: "05/07/2026",
-      fee: "500.000 VNĐ / người",
+      type: 'tournament',
+      sport: 'badminton',
+      sportLabel: 'Cầu lông',
+      authorName: 'CLB Đà Nẵng Open',
+      authorAvatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuANI1x_H2RdY7olRA7qX1WUUIfIQwHoIaH4XrzOH4c6xfkVkEVxoG0ydU0Eb_kSKsKTJ_ZEeb5_yK1xsS4WcB-CcZCY5gaT6_hCC0Mfgw49LUIEktD8ohKdrkEG-bbUKpyZecwlZSsl4PnlLXJdb5RX45pd-wpK12JQDpLJtkL3-aE8WkFUaTqt_tUkgl9CuWxYUFyiF7C1_TJACMEvJjnWRT41ersXAcDWf2jWblqU8X5Y3mbJ8HQKxA',
+      coverImage: 'https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?auto=format&fit=crop&q=80&w=500&h=250',
+      postedTime: 'Đăng 2 giờ trước',
+      statusText: 'Đang mở',
+      title: 'Giải Cầu Lông Đà Nẵng Open 2026',
+      desc: 'Giải đấu phong trào quy mô lớn nhất năm dành cho các tay vợt bán chuyên và phong trào.',
+      location: 'Cung Thể Thao Tiên Sơn',
+      dateStr: '05/07/2026',
+      fee: '500.000 VNĐ / người',
+      limit: 64
     },
     {
       id: 2,
-      type: "match",
-      authorName: "Nguyễn Ánh",
-      authorAvatar:
-        "https://ui-avatars.com/api/?name=Nguyen+Anh&background=ffb2b9&color=fff",
-      postedTime: "Đăng 11 giờ trước",
-      statusText: "Cần người",
-      title: "",
-      desc: "Tuyển vãng lai sáng mai thứ 3 (30/06)\nĐịa điểm: sân cầu lông pinpon sân 11 (kcn an đồn)\nThời gian: 8h30-10h30\nTrình độ: yếu tby\nPhí: 40k\nChuyển khoản để chốt slot ạ",
-      location: "Sân cầu lông Pinpon (KCN An Đồn)",
-      schedule: "08:30 - 10:30",
-      level: "Yếu - TB Yếu",
-      fbLink:
-        "https://www.facebook.com/groups/danangbadminton/posts/37195001866764864/",
+      type: 'match',
+      sport: 'badminton',
+      sportLabel: 'Cầu lông',
+      authorName: 'Nguyễn Ánh',
+      authorAvatar: 'https://ui-avatars.com/api/?name=Nguyen+Anh&background=ffb2b9&color=fff',
+      postedTime: 'Đăng 11 giờ trước',
+      statusText: 'Cần người',
+      title: 'Kèo Cầu lông vãng lai',
+      desc: 'Tuyển vãng lai sáng mai thứ 3 (30/06)\nĐịa điểm: sân cầu lông pinpon sân 11 (kcn an đồn)\nThời gian: 8h30-10h30\nTrình độ: yếu tby\nPhí: 40k\nChuyển khoản để chốt slot ạ',
+      location: 'Sân cầu lông Pinpon (KCN An Đồn)',
+      schedule: '08:30 - 10:30',
+      level: 'Yếu - TB Yếu',
+      fee: '40.000 VNĐ / người',
+      slots: 'Còn 2 slot',
+      fbLink: 'https://www.facebook.com/groups/danangbadminton/posts/37195001866764864/',
     },
     {
       id: 3,
-      type: "tournament",
-      authorName: "CLB Thanh Khê",
-      authorAvatar:
-        "https://lh3.googleusercontent.com/aida-public/AB6AXuAjwkzH1br53KR99kc0gW3Db2VqGC745ZuwR5Hutz5w9Bhiv-JTBO6k7JMNCc_BVFSNVPhRMMHvmHjtPi2er8iQxX5hbW8pZVpGC7m37gcjdrxshGme76UHby0iOfpBNNF3l10Bn6GxUxV1XsMewZ773pfiplFj5cNwomjS5ARpEPNZU1yXjuZhry2UyYBqOY-qUownJeQZhjqXntXVR9Dcx5Z66KIIpajPoSadzaerzdiLyJ7dPLSxkA",
-      postedTime: "Đăng 1 ngày trước",
-      statusText: "Sắp đóng",
-      title: "Giải Cầu Lông Đôi Nam Nữ Thanh Khê",
-      desc: "Giải đấu giao lưu nội bộ quận Thanh Khê, tập trung vào thể thức đôi nam nữ.",
-      location: "Sân Cầu Lông Kỳ Đồng",
-      dateStr: "02/09/2024",
-      fee: "300.000 VNĐ / cặp",
+      type: 'tournament',
+      sport: 'pickleball',
+      sportLabel: 'Pickleball',
+      authorName: 'CLB Thanh Khê',
+      authorAvatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAjwkzH1br53KR99kc0gW3Db2VqGC745ZuwR5Hutz5w9Bhiv-JTBO6k7JMNCc_BVFSNVPhRMMHvmHjtPi2er8iQxX5hbW8pZVpGC7m37gcjdrxshGme76UHby0iOfpBNNF3l10Bn6GxUxV1XsMewZ773pfiplFj5cNwomjS5ARpEPNZU1yXjuZhry2UyYBqOY-qUownJeQZhjqXntXVR9Dcx5Z66KIIpajPoSadzaerzdiLyJ7dPLSxkA',
+      coverImage: 'https://images.unsplash.com/photo-1611566144960-4f7b1376a591?auto=format&fit=crop&q=80&w=500&h=250',
+      postedTime: 'Đăng 1 ngày trước',
+      statusText: 'Sắp đóng',
+      title: 'Giải Pickleball Đôi Nam Nữ Thanh Khê',
+      desc: 'Giải đấu giao lưu nội bộ quận Thanh Khê, tập trung vào thể thức đôi nam nữ.',
+      location: 'Sân Cầu Lông Kỳ Đồng',
+      dateStr: '02/09/2026',
+      fee: '300.000 VNĐ / cặp',
+      limit: 32
     },
     {
       id: 4,
-      type: "match",
-      authorName: "Mai Sương",
-      authorAvatar:
-        "https://lh3.googleusercontent.com/aida-public/AB6AXuCWDtjwj9EYv3ovmCldYzVCLFcIiLRDFJfF49m87F-SUWiD5lWCmwUSGIsLuvnfjagqC6xAGPTTXlcI4dF8gAYkVRfkU6j0QOx1oMP5w__xAIKDhdRyJV4Sjk9nuPopUKOzs2NqE8tHe-zZdqG5vi0vgayjKkF0zEQCLa4kOuS73n0CB2OLRUMBhbWtH9eJXndpZrJaXpZaH_phmMYOLr2UNbn5_R24Wq7ekswtAuM_XQN0NI87DHBBXA",
-      postedTime: "Đăng 1 giờ trước",
-      statusText: "Cần người",
-      title: "",
-      desc: "TUYỂN VL Nam Nữ Sáng Nay (30/6)\n⏰ 9h - 11h\n🎪 Sân Lâm Gia 17 bầu năng 11\n🔥 Tb- , Tby\n🪎 Nam 50k Nữ 45K\nIb m ạ",
-      location: "Sân Lâm Gia 17 Bầu Năng 11",
-      schedule: "09:00 - 11:00",
-      level: "TB Yếu - TB",
-      fbLink:
-        "https://www.facebook.com/groups/300385366290013/posts/1012999208361955/",
+      type: 'match',
+      sport: 'badminton',
+      sportLabel: 'Cầu lông',
+      authorName: 'Mai Sương',
+      authorAvatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCWDtjwj9EYv3ovmCldYzVCLFcIiLRDFJfF49m87F-SUWiD5lWCmwUSGIsLuvnfjagqC6xAGPTTXlcI4dF8gAYkVRfkU6j0QOx1oMP5w__xAIKDhdRyJV4Sjk9nuPopUKOzs2NqE8tHe-zZdqG5vi0vgayjKkF0zEQCLa4kOuS73n0CB2OLRUMBhbWtH9eJXndpZrJaXpZaH_phmMYOLr2UNbn5_R24Wq7ekswtAuM_XQN0NI87DHBBXA',
+      postedTime: 'Đăng 1 giờ trước',
+      statusText: 'Cần người',
+      title: 'Kèo Cầu lông vãng lai',
+      desc: 'TUYỂN VL Nam Nữ Sáng Nay (30/6)\n⏰ 9h - 11h\n🎪 Sân Lâm Gia 17 bầu năng 11\n🔥 Tb- , Tby\n🪎 Nam 50k Nữ 45K\nIb m ạ',
+      location: 'Sân Lâm Gia 17 Bầu Năng 11',
+      schedule: '09:00 - 11:00',
+      level: 'TB Yếu - TB',
+      fee: '47.500 VNĐ / người',
+      slots: 'Còn 3 slot',
+      fbLink: 'https://www.facebook.com/groups/300385366290013/posts/1012999208361955/',
     },
   ];
 
-  const names = [
-    "Hoàng Minh",
-    "Lê Hữu",
-    "Phạm Tuấn",
-    "Vũ Ngọc",
-    "Bùi Xuân",
-    "Đặng Thùy",
-    "Ngô Kiến",
-    "Đỗ Duy",
-  ];
-  const titles = [
-    "Giải Sinh Viên",
-    "Giao Hữu",
-    "Tranh Cúp Mùa Hè",
-    "Giải Nội Bộ",
-    "Thách Đấu Ngày Chủ Nhật",
-  ];
+  const names = ['Hoàng Minh', 'Lê Hữu', 'Phạm Tuấn', 'Vũ Ngọc', 'Bùi Xuân', 'Đặng Thùy', 'Ngô Kiến', 'Đỗ Duy'];
+  const titles = ['Giải Cầu Lông Đơn Nam Hè 2026', 'Giao Hữu Pickleball Cuối Tuần', 'Giải Cầu Lông Tranh Cúp Mùa Hè', 'Giải Pickleball Nội Bộ Mở Rộng', 'Thách Đấu Cầu Lông Chủ Nhật'];
 
-  for (let i = 5; i <= 20; i++) {
-    const isTournament = Math.random() > 0.6;
+  for (let i = 5; i <= 24; i++) {
+    const isTournament = i % 2 === 0;
+    const isPickleball = i % 3 === 0;
     const court = COURTS[Math.floor(Math.random() * COURTS.length)];
-    const name =
-      names[Math.floor(Math.random() * names.length)] + " " + (i % 5);
+    const name = names[Math.floor(Math.random() * names.length)] + ' ' + (i % 5);
 
     if (isTournament) {
       posts.push({
         id: i,
-        type: "tournament",
-        authorName: "CLB " + name,
-        authorAvatar:
-          "https://lh3.googleusercontent.com/aida-public/AB6AXuDC45ai1ByAoUrZ9jZlwYTHpQhRyro4iL0Rwlinq0_zwx4q_72-HiYU89GjVManXAB5Aw-lkPrOJgw1oA7KcYmttVMZ1zb9sfLudpD1FNSaYG1ahRcTUxMNjltJLqP2EoTFhkBGsanT967V2fNOsquHbDINLfbC2BeHpGOT8uC8nuseMQ1c84AFRJoQqUJSy62QQJF6iMQPLZvdbDWKerpZ-HjcKQ3d4CKUFPtTDkRMknHInM7tgCDirg",
-        postedTime: `Đăng ${i} giờ trước`,
-        statusText: "Đang mở",
+        type: 'tournament',
+        sport: isPickleball ? 'pickleball' : 'badminton',
+        sportLabel: isPickleball ? 'Pickleball' : 'Cầu lông',
+        authorName: 'CLB ' + name,
+        authorAvatar: 'https://ui-avatars.com/api/?name=CLB&background=e2e8f0&color=475569',
+        coverImage: isPickleball
+          ? 'https://images.unsplash.com/photo-1611566144960-4f7b1376a591?auto=format&fit=crop&q=80&w=500&h=250'
+          : 'https://images.unsplash.com/photo-1560012206-a88b5113d5b7?auto=format&fit=crop&q=80&w=500&h=250',
+        postedTime: `Đăng ${i % 5 + 1} giờ trước`,
+        statusText: 'Đang mở',
         title: titles[Math.floor(Math.random() * titles.length)],
-        desc: "Một giải đấu đầy kịch tính đang chờ đón bạn.",
+        desc: 'Một giải đấu đầy kịch tính đang chờ đón các vận động viên đăng ký tham gia cọ xát và giành những phần quà hấp dẫn.',
         location: court,
-        dateStr: "Tuần sau",
-        fee: "200.000 VNĐ / người",
+        dateStr: '15/07/2026',
+        fee: '200.000 VNĐ / người',
+        limit: 32
       });
     } else {
       posts.push({
         id: i,
-        type: "match",
+        type: 'match',
+        sport: isPickleball ? 'pickleball' : 'badminton',
+        sportLabel: isPickleball ? 'Pickleball' : 'Cầu lông',
         authorName: name,
-        authorAvatar:
-          "https://lh3.googleusercontent.com/aida-public/AB6AXuANI1x_H2RdY7olRA7qX1WUUIfIQwHoIaH4XrzOH4c6xfkVkEVxoG0ydU0Eb_kSKsKTJ_ZEeb5_yK1xsS4WcB-CcZCY5gaT6_hCC0Mfgw49LUIEktD8ohKdrkEG-bbUKpyZecwlZSsl4PnlLXJdb5RX45pd-wpK12JQDpLJtkL3-aE8WkFUaTqt_tUkgl9CuWxYUFyiF7C1_TJACMEvJjnWRT41ersXAcDWf2jWblqU8X5Y3mbJ8HQKxA",
-        postedTime: `Đăng ${i} giờ trước`,
-        statusText: "Cần người",
-        title: "",
-        desc: "Thiếu 1 người đánh vãng lai. Ai đi được inbox mình.",
+        authorAvatar: `https://ui-avatars.com/api/?name=${name.replace(' ', '+')}&background=e8f0fe&color=1a73e8`,
+        postedTime: `Đăng ${i % 5 + 1} giờ trước`,
+        statusText: 'Cần người',
+        title: isPickleball ? 'Kèo Pickleball tối nay' : 'Kèo Cầu lông vãng lai',
+        desc: 'Thiếu người chơi vãng lai vui vẻ hòa đồng. Sân đẹp, bóng/cầu cung cấp sẵn, chỉ cần xách vợt đến chơi.',
         location: court,
-        schedule: "18:00 - 20:00",
-        level: "Trung bình",
-        fbLink:
-          "https://www.facebook.com/groups/danangbadminton/posts/37195001866764864/",
+        schedule: '18:00 - 20:00',
+        level: isPickleball
+          ? ['DUPR 2.0 - 2.5', 'DUPR 3.0 - 3.5', 'DUPR 4.0 - 4.5', 'DUPR 5.0+'][Math.floor(Math.random() * 4)]
+          : ['Yếu - TB Yếu', 'Trung bình', 'Khá - Giỏi'][Math.floor(Math.random() * 3)],
+        fee: '45.000 VNĐ / người',
+        slots: 'Còn 2 slot',
+        fbLink: 'https://www.facebook.com/groups/danangbadminton/posts/37195001866764864/',
       });
     }
   }
@@ -146,48 +174,30 @@ const MOCK_POSTS = generateMockPosts();
 // Helper to map court locations to districts in Da Nang
 const getDistrictFromLocation = (location: string): string => {
   const locLower = location.toLowerCase();
-  if (locLower.includes("hải châu")) return "Hải Châu";
-  if (locLower.includes("thanh khê") || locLower.includes("kỳ đồng") || locLower.includes("bế văn đàn")) return "Thanh Khê";
-  if (locLower.includes("liên chiểu") || locLower.includes("lâm gia") || locLower.includes("bầu năng")) return "Liên Chiểu";
-  if (locLower.includes("ngũ hành sơn")) return "Ngũ Hành Sơn";
-  if (locLower.includes("sơn trà") || locLower.includes("pinpon") || locLower.includes("an đồn")) return "Sơn Trà";
-  if (locLower.includes("cẩm lệ") || locLower.includes("hoà xuân")) return "Cẩm Lệ";
-  if (locLower.includes("tiên sơn")) return "Hải Châu";
-  if (locLower.includes("tuyến sơn")) return "Hải Châu";
-  return "";
+  if (locLower.includes('hải châu')) return 'Hải Châu';
+  if (locLower.includes('thanh khê') || locLower.includes('kỳ đồng') || locLower.includes('bế văn đàn')) return 'Thanh Khê';
+  if (locLower.includes('liên chiểu') || locLower.includes('lâm gia') || locLower.includes('bầu năng')) return 'Liên Chiểu';
+  if (locLower.includes('ngũ hành sơn')) return 'Ngũ Hành Sơn';
+  if (locLower.includes('sơn trà') || locLower.includes('pinpon') || locLower.includes('an đồn')) return 'Sơn Trà';
+  if (locLower.includes('cẩm lệ') || locLower.includes('hoà xuân')) return 'Cẩm Lệ';
+  if (locLower.includes('tiên sơn')) return 'Hải Châu';
+  if (locLower.includes('tuyên sơn') || locLower.includes('tuyến sơn')) return 'Hải Châu';
+  return '';
 };
 
 // Helper to match post level with selected filter level
 const matchLevel = (postLevel: string | undefined, selectedLevel: string): boolean => {
   if (!selectedLevel) return true;
-  if (!postLevel) return true; // Tournaments might not have explicit level, accept by default
-  
+  if (!postLevel) return true;
   const pl = postLevel.toLowerCase();
   const sel = selectedLevel.toLowerCase();
-  
-  if (sel === "trung bình yếu") {
-    return pl.includes("tb yếu") || pl.includes("tby") || pl.includes("trung bình yếu") || pl.includes("yêu");
-  }
-  if (sel === "trung bình khá") {
-    return pl.includes("tb khá") || pl.includes("tbk") || pl.includes("trung bình khá");
-  }
-  if (sel === "trung bình") {
-    return pl.includes("trung bình") || (pl.includes("tb") && !pl.includes("tb yếu") && !pl.includes("tb khá") && !pl.includes("tby") && !pl.includes("tbk"));
-  }
-  if (sel === "yếu") {
-    return pl.includes("yếu") || pl.includes("tby");
-  }
-  if (sel === "khá") {
-    return pl.includes("khá") || pl.includes("tbk");
-  }
-  
   return pl.includes(sel);
 };
 
 // Helper to parse date from post
 const getPostDate = (post: any): Date | null => {
   if (post.dateStr) {
-    const parts = post.dateStr.split("/");
+    const parts = post.dateStr.split('/');
     if (parts.length === 3) {
       const d = parseInt(parts[0], 10);
       const m = parseInt(parts[1], 10) - 1;
@@ -195,7 +205,6 @@ const getPostDate = (post: any): Date | null => {
       return new Date(y, m, d);
     }
   }
-  // Try to parse from desc (for matches) e.g., "30/06" or "30/6"
   if (post.desc) {
     const match = post.desc.match(/(\d{1,2})\/(\d{1,2})/);
     if (match) {
@@ -211,100 +220,227 @@ const getPostDate = (post: any): Date | null => {
 // Helper to parse time from schedule string (e.g., "08:30 - 10:30")
 const getPostTimeRange = (post: any): { start: string; end: string } | null => {
   if (post.schedule) {
-    const parts = post.schedule.split("-");
+    const parts = post.schedule.split('-');
     if (parts.length === 2) {
-      return {
-        start: parts[0].trim(),
-        end: parts[1].trim(),
-      };
+      return { start: parts[0].trim(), end: parts[1].trim() };
     }
   }
   return null;
 };
 
 export default function TournamentsPage() {
+  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const query = searchParams.get("q") || "";
+  const query = searchParams.get('q') || '';
+  const courtQuery = searchParams.get('court') || '';
 
+  // Posts from localStorage (synced)
   const [posts, setPosts] = useState<any[]>(() => {
-    const savedTournaments = localStorage.getItem("courtmate_tournaments");
+    const savedTournaments = localStorage.getItem('courtmate_tournaments');
     if (savedTournaments) {
       return JSON.parse(savedTournaments);
     } else {
-      localStorage.setItem("courtmate_tournaments", JSON.stringify(MOCK_POSTS));
+      localStorage.setItem('courtmate_tournaments', JSON.stringify(MOCK_POSTS));
       return MOCK_POSTS;
     }
   });
 
   const [registrations, setRegistrations] = useState<any[]>(() => {
-    const saved = localStorage.getItem("courtmate_registrations");
+    const saved = localStorage.getItem('courtmate_registrations');
     return saved ? JSON.parse(saved) : [];
   });
 
   // Sync state with localStorage updates
   useEffect(() => {
-    let lastTournamentsString = localStorage.getItem("courtmate_tournaments") || "";
-    let lastRegistrationsString = localStorage.getItem("courtmate_registrations") || "";
+    let lastTournamentsString = localStorage.getItem('courtmate_tournaments') || '';
+    let lastRegistrationsString = localStorage.getItem('courtmate_registrations') || '';
 
     const handleStorageChange = () => {
-      const savedTournaments = localStorage.getItem("courtmate_tournaments");
+      const savedTournaments = localStorage.getItem('courtmate_tournaments');
       if (savedTournaments && savedTournaments !== lastTournamentsString) {
         lastTournamentsString = savedTournaments;
         setPosts(JSON.parse(savedTournaments));
       }
-
-      const savedRegistrations = localStorage.getItem("courtmate_registrations");
+      const savedRegistrations = localStorage.getItem('courtmate_registrations');
       if (savedRegistrations && savedRegistrations !== lastRegistrationsString) {
         lastRegistrationsString = savedRegistrations;
         setRegistrations(JSON.parse(savedRegistrations));
       }
     };
-    
-    window.addEventListener("storage", handleStorageChange);
-    const interval = setInterval(handleStorageChange, 1000); // Poll every second for seamless local updates
+
+    window.addEventListener('storage', handleStorageChange);
+    const interval = setInterval(handleStorageChange, 1000);
     return () => {
-      window.removeEventListener("storage", handleStorageChange);
+      window.removeEventListener('storage', handleStorageChange);
       clearInterval(interval);
     };
   }, []);
 
-  const courtQuery = searchParams.get("court") || "";
-  const [district, setDistrict] = useState("");
-  const [level, setLevel] = useState("");
+  // Custom Dropdown Open States
+  const [openDropdown, setOpenDropdown] = useState<'court' | 'level' | null>(null);
 
-  const [dateRange, setDateRange] = useState<[Date | null, Date | null]>([
-    null,
-    null,
-  ]);
-  const [startDate, endDate] = dateRange;
-  const [startTime, setStartTime] = useState("");
-  const [endTime, setEndTime] = useState("");
-  const [displayCount, setDisplayCount] = useState(6);
-  const observerTarget = useRef<HTMLDivElement>(null);
+  // Modal State
   const [selectedPost, setSelectedPost] = useState<any>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // Carousel State
+  const [activeSlide, setActiveSlide] = useState(0);
+
+  // Filter States
+  const [level, setLevel] = useState('');
+  const [sportFilter, setSportFilter] = useState('');
+  const [district, setDistrict] = useState('');
+  const [dateRange, setDateRange] = useState<[Date | null, Date | null]>([null, null]);
+  const [startDate, endDate] = dateRange;
+  const [startTime, setStartTime] = useState('');
+  const [endTime, setEndTime] = useState('');
+  const [showDatePicker, setShowDatePicker] = useState(false);
+
+  // Infinity Scroll state
+  const [displayCount, setDisplayCount] = useState(8);
+  const observerTarget = useRef<HTMLDivElement>(null);
+
+  // Greeting
   const currentHour = new Date().getHours();
-  let greeting = "Chào buổi tối";
-  if (currentHour >= 5 && currentHour < 12) greeting = "Chào buổi sáng";
-  else if (currentHour >= 12 && currentHour < 18) greeting = "Chào buổi chiều";
+  let greeting = 'Chào buổi tối';
+  if (currentHour >= 5 && currentHour < 12) greeting = 'Chào buổi sáng';
+  else if (currentHour >= 12 && currentHour < 18) greeting = 'Chào buổi chiều';
 
   const { userName } = useAuth();
 
-  const handleCourtChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+  // Auto-run slide timer
+  useEffect(() => {
+    const slideTimer = setInterval(() => {
+      setActiveSlide(prev => (prev + 1) % CAROUSEL_SLIDES.length);
+    }, 5000);
+    return () => clearInterval(slideTimer);
+  }, []);
+
+  // Close dropdowns on window click
+  useEffect(() => {
+    const handleClose = () => {
+      setOpenDropdown(null);
+      setShowDatePicker(false);
+    };
+    window.addEventListener('click', handleClose);
+    return () => window.removeEventListener('click', handleClose);
+  }, []);
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
     const newParams = new URLSearchParams(searchParams);
-    if (val) newParams.set("court", val);
-    else newParams.delete("court");
+    if (val) newParams.set('q', val);
+    else newParams.delete('q');
     setSearchParams(newParams);
+  };
+
+  const handleCourtChange = (courtName: string) => {
+    const newParams = new URLSearchParams(searchParams);
+    if (courtName) newParams.set('court', courtName);
+    else newParams.delete('court');
+    setSearchParams(newParams);
+  };
+
+  const handleSportFilterChange = (sport: string) => {
+    setSportFilter(sport);
+    setLevel(''); // Reset level when changing sports
+  };
+
+  const handleQuickTagClick = (action: string) => {
+    if (action === 'all_tournaments') {
+      handleSportFilterChange('');
+      const newParams = new URLSearchParams(searchParams);
+      newParams.set('q', 'Giải');
+      setSearchParams(newParams);
+    } else if (action === 'open_registration') {
+      const newParams = new URLSearchParams(searchParams);
+      newParams.set('q', 'Đang mở');
+      setSearchParams(newParams);
+    } else if (action === 'court_tienson') {
+      const newParams = new URLSearchParams(searchParams);
+      newParams.set('court', 'Cung Thể Thao Tiên Sơn');
+      setSearchParams(newParams);
+    } else if (action === 'pickleball_hot') {
+      handleSportFilterChange('pickleball');
+      const newParams = new URLSearchParams(searchParams);
+      newParams.delete('court');
+      setSearchParams(newParams);
+    } else if (action === 'need_players') {
+      const newParams = new URLSearchParams(searchParams);
+      newParams.set('q', 'Cần người');
+      setSearchParams(newParams);
+    }
+  };
+
+  const isTagActive = (action: string) => {
+    if (action === 'all_tournaments') return query === 'Giải';
+    if (action === 'open_registration') return query === 'Đang mở';
+    if (action === 'court_tienson') return courtQuery === 'Cung Thể Thao Tiên Sơn';
+    if (action === 'pickleball_hot') return sportFilter === 'pickleball' && !courtQuery;
+    if (action === 'need_players') return query === 'Cần người';
+    return false;
   };
 
   const getRegCount = (postId: number) => {
     return registrations.filter((r: any) => r.tournamentId === postId).length;
   };
 
-  const filteredPosts = posts.filter((post) => {
+  // Dynamic Level Options based on Sport selected
+  const getLevelOptions = () => {
+    if (sportFilter === 'badminton') {
+      return [
+        { label: 'Tất cả trình độ cầu lông', value: '', group: 'all' },
+        { label: 'Yếu - TB Yếu', value: 'yếu', group: 'all' },
+        { label: 'Trung bình', value: 'trung bình', group: 'all' },
+        { label: 'Khá - Giỏi', value: 'khá', group: 'all' }
+      ];
+    }
+    if (sportFilter === 'pickleball') {
+      return [
+        { label: 'Tất cả trình độ DUPR', value: '', group: 'all' },
+        { label: 'DUPR 2.0 - 2.5 (Nhập môn)', value: '2.0', group: 'all' },
+        { label: 'DUPR 3.0 - 3.5 (Trung bình)', value: '3.0', group: 'all' },
+        { label: 'DUPR 4.0 - 4.5 (Khá)', value: '4.0', group: 'all' },
+        { label: 'DUPR 5.0+ (Chuyên nghiệp)', value: '5.0', group: 'all' }
+      ];
+    }
+    return [
+      { label: 'Tất cả trình độ', value: '', group: 'all' },
+      { label: 'Cầu lông: Yếu - TB Yếu', value: 'yếu', group: 'Cầu lông' },
+      { label: 'Cầu lông: Trung bình', value: 'trung bình', group: 'Cầu lông' },
+      { label: 'Cầu lông: Khá - Giỏi', value: 'khá', group: 'Cầu lông' },
+      { label: 'Pickleball: DUPR 2.0 - 2.5', value: '2.0', group: 'Pickleball' },
+      { label: 'Pickleball: DUPR 3.0 - 3.5', value: '3.0', group: 'Pickleball' },
+      { label: 'Pickleball: DUPR 4.0 - 4.5', value: '4.0', group: 'Pickleball' },
+      { label: 'Pickleball: DUPR 5.0+', value: '5.0', group: 'Pickleball' }
+    ];
+  };
+
+  const getLevelButtonLabel = () => {
+    if (sportFilter === 'badminton') {
+      if (level === 'yếu') return 'Yếu - TB Yếu';
+      if (level === 'trung bình') return 'Trung bình';
+      if (level === 'khá') return 'Khá - Giỏi';
+    }
+    if (sportFilter === 'pickleball') {
+      if (level === '2.0') return 'DUPR 2.0 - 2.5';
+      if (level === '3.0') return 'DUPR 3.0 - 3.5';
+      if (level === '4.0') return 'DUPR 4.0 - 4.5';
+      if (level === '5.0') return 'DUPR 5.0+';
+    }
+    if (level === 'yếu') return 'Cầu lông: Yếu - TB Yếu';
+    if (level === 'trung bình') return 'Cầu lông: Trung bình';
+    if (level === 'khá') return 'Cầu lông: Khá - Giỏi';
+    if (level === '2.0') return 'Pickleball: DUPR 2.0-2.5';
+    if (level === '3.0') return 'Pickleball: DUPR 3.0-3.5';
+    if (level === '4.0') return 'Pickleball: DUPR 4.0-4.5';
+    if (level === '5.0') return 'Pickleball: DUPR 5.0+';
+    return 'Tất cả trình độ';
+  };
+
+  const filteredPosts = posts.filter(post => {
     let matches = true;
-    
+
     // 1. Search query filter
     if (query) {
       const searchStr = query.toLowerCase();
@@ -312,28 +448,34 @@ export default function TournamentsPage() {
         post.authorName.toLowerCase().includes(searchStr) ||
         (post.title && post.title.toLowerCase().includes(searchStr)) ||
         post.desc.toLowerCase().includes(searchStr) ||
-        post.location.toLowerCase().includes(searchStr);
+        post.location.toLowerCase().includes(searchStr) ||
+        (post.statusText && post.statusText.toLowerCase().includes(searchStr));
     }
-    
+
     // 2. Court filter
     if (courtQuery) {
-      matches =
-        matches &&
-        post.location.toLowerCase().includes(courtQuery.toLowerCase());
+      matches = matches && post.location.toLowerCase().includes(courtQuery.toLowerCase());
     }
-    
-    // 3. District filter
+
+    // 3. Sport filter
+    if (sportFilter) {
+      matches = matches && post.sport === sportFilter;
+    }
+
+    // 4. District filter
     if (district) {
       const postDistrict = getDistrictFromLocation(post.location);
       matches = matches && postDistrict === district;
     }
-    
-    // 4. Level filter
+
+    // 5. Level filter
     if (level) {
-      matches = matches && matchLevel(post.level, level);
+      if (post.type === 'match') {
+        matches = matches && matchLevel(post.level, level);
+      }
     }
-    
-    // 5. Date Range filter
+
+    // 6. Date Range filter
     if (startDate) {
       const postDate = getPostDate(post);
       if (postDate) {
@@ -352,18 +494,14 @@ export default function TournamentsPage() {
         matches = matches && postDate <= eDate;
       }
     }
-    
-    // 6. Time filter
+
+    // 7. Time filter
     const timeRange = getPostTimeRange(post);
     if (timeRange) {
-      if (startTime) {
-        matches = matches && timeRange.start >= startTime;
-      }
-      if (endTime) {
-        matches = matches && timeRange.end <= endTime;
-      }
+      if (startTime) matches = matches && timeRange.start >= startTime;
+      if (endTime) matches = matches && timeRange.end <= endTime;
     }
-    
+
     return matches;
   });
 
@@ -373,354 +511,469 @@ export default function TournamentsPage() {
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries[0].isIntersecting) {
-          setDisplayCount((prev) => Math.min(prev + 6, filteredPosts.length));
+          setDisplayCount(prev => Math.min(prev + 8, filteredPosts.length));
         }
       },
-      { threshold: 0.1 },
+      { threshold: 0.1 }
     );
     if (observerTarget.current) observer.observe(observerTarget.current);
     return () => observer.disconnect();
   }, [filteredPosts.length]);
 
   const hasActiveFilters =
-    query !== "" ||
-    courtQuery !== "" ||
-    district !== "" ||
-    level !== "" ||
-    startDate !== null ||
-    endDate !== null ||
-    startTime !== "" ||
-    endTime !== "";
+    query !== '' || courtQuery !== '' || sportFilter !== '' || district !== '' ||
+    level !== '' || startDate !== null || endDate !== null || startTime !== '' || endTime !== '';
 
   const handleClearFilters = () => {
     setSearchParams(new URLSearchParams());
-    setDistrict("");
-    setLevel("");
+    setSportFilter('');
+    setDistrict('');
+    setLevel('');
     setDateRange([null, null]);
-    setStartTime("");
-    setEndTime("");
+    setStartTime('');
+    setEndTime('');
   };
 
   return (
     <main className="w-full max-w-7xl mx-auto px-margin-mobile md:px-margin-desktop py-xl">
-      <header className="mb-md text-left">
-        <h1 className="font-display-lg text-display-lg md:text-[48px] text-[32px] font-bold text-on-background mb-sm">
+      {/* Header Section */}
+      <header className="mb-lg text-left">
+        <h1 className="font-display-lg text-display-lg md:text-[48px] text-[32px] font-bold text-on-background mb-2">
           {greeting}, {userName}!
         </h1>
+        <p className="text-on-surface-variant font-body-md text-body-md">Tìm kiếm giải đấu và tham gia các kèo đấu thể thao quanh bạn.</p>
       </header>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-lg relative items-start">
-        <aside className="lg:col-span-3 flex flex-col gap-md lg:sticky top-[100px]">
-          <div className="glass-card bg-white/70 backdrop-blur-md border border-white/50 shadow-sm rounded-3xl p-lg flex flex-col gap-lg max-h-[calc(100vh-120px)] overflow-y-auto custom-scrollbar">
-            <h2 className="font-title-lg text-title-lg font-bold text-on-background flex items-center gap-2">
-              <span className="material-symbols-outlined">filter_list</span>
-              Bộ lọc
-            </h2>
-            <div className="flex flex-col gap-sm">
-              <label className="font-label-md text-label-md text-on-surface-variant">
-                Lọc Sân
-              </label>
-              <div className="relative">
-                <select
-                  value={courtQuery}
-                  onChange={handleCourtChange}
-                  className="w-full appearance-none pl-3 pr-8 py-2 bg-surface-container-low border border-outline-variant rounded-xl font-body-sm text-on-surface cursor-pointer focus:ring-2 focus:ring-primary outline-none"
-                >
-                  <option value="">Tất cả các sân</option>
-                  {COURTS.map((c) => (
-                    <option key={c} value={c}>
-                      {c}
-                    </option>
-                  ))}
-                </select>
-                <span className="material-symbols-outlined absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-[18px] text-on-surface-variant">
-                  expand_more
-                </span>
-              </div>
-            </div>
-            <div className="flex flex-col gap-sm">
-              <label className="font-label-md text-label-md text-on-surface-variant">
-                Khu vực
-              </label>
-              <div className="relative">
-                <select
-                  value={district}
-                  onChange={(e) => setDistrict(e.target.value)}
-                  className="w-full appearance-none pl-3 pr-8 py-2 bg-surface-container-low border border-outline-variant rounded-xl font-body-sm text-on-surface cursor-pointer focus:ring-2 focus:ring-primary outline-none"
-                >
-                  <option value="">Tất cả</option>
-                  <option value="Hải Châu">Hải Châu</option>
-                  <option value="Thanh Khê">Thanh Khê</option>
-                  <option value="Liên Chiểu">Liên Chiểu</option>
-                  <option value="Ngũ Hành Sơn">Ngũ Hành Sơn</option>
-                  <option value="Sơn Trà">Sơn Trà</option>
-                  <option value="Cẩm Lệ">Cẩm Lệ</option>
-                </select>
-                <span className="material-symbols-outlined absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-[18px] text-on-surface-variant">
-                  expand_more
-                </span>
-              </div>
-            </div>
-            <div className="flex flex-col gap-sm">
-              <label className="font-label-md text-label-md text-on-surface-variant">
-                Trình độ
-              </label>
-              <div className="relative">
-                <select
-                  value={level}
-                  onChange={(e) => setLevel(e.target.value)}
-                  className="w-full appearance-none pl-3 pr-8 py-2 bg-surface-container-low border border-outline-variant rounded-xl font-body-sm text-on-surface cursor-pointer focus:ring-2 focus:ring-primary outline-none"
-                >
-                  <option value="">Tất cả</option>
-                  <option value="Yếu">Yếu</option>
-                  <option value="Trung bình yếu">Trung bình yếu</option>
-                  <option value="Trung bình">Trung bình</option>
-                  <option value="Trung bình khá">Trung bình khá</option>
-                  <option value="Khá">Khá</option>
-                </select>
-                <span className="material-symbols-outlined absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-[18px] text-on-surface-variant">
-                  expand_more
-                </span>
-              </div>
-            </div>
-            <div className="flex flex-col gap-sm">
-              <label className="font-label-md text-label-md text-on-surface-variant">
-                Khoảng thời gian
-              </label>
-              <div className="bg-surface-container-low border border-outline-variant rounded-xl p-3 shadow-sm overflow-hidden">
-                <div className="w-full flex justify-center mb-4 custom-datepicker">
-                  <style
-                    dangerouslySetInnerHTML={{
-                      __html: `
-                    .custom-datepicker .react-datepicker { font-family: inherit; border: none; background: transparent; width: 100%; display: flex; justify-content: center; }
-                    .custom-datepicker .react-datepicker__header { background: transparent; border-bottom: none; padding-top: 8px; }
-                    .custom-datepicker .react-datepicker__day--selected, .custom-datepicker .react-datepicker__day--in-selecting-range, .custom-datepicker .react-datepicker__day--in-range { background-color: #00685f !important; color: white !important; border-radius: 8px; }
-                    .custom-datepicker .react-datepicker__day:hover { border-radius: 8px; background-color: #eff4ff; }
-                    .custom-datepicker .react-datepicker__month-container { width: 100%; }
-                    .custom-datepicker .react-datepicker__day-names { display: flex; justify-content: space-between; margin-bottom: 8px; }
-                    .custom-datepicker .react-datepicker__week { display: flex; justify-content: space-between; }
-                    .custom-datepicker .react-datepicker__day--keyboard-selected { background-color: transparent; color: inherit; }
-                    .custom-datepicker .react-datepicker__day:focus { outline: none; }
-                  `,
-                    }}
-                  />
-                  <DatePicker
-                    selectsRange={true}
-                    startDate={startDate}
-                    endDate={endDate}
-                    onChange={(update) => setDateRange(update)}
-                    inline
-                  />
-                </div>
-                <div className="border-t border-outline-variant/50 pt-3">
-                  <label className="font-label-md text-[12px] text-on-surface-variant font-semibold mb-2 block">
-                    Khung giờ
-                  </label>
-                  <div className="flex items-center gap-2">
-                    <div className="flex-1 min-w-0">
-                      <label className="text-[10px] text-on-surface-variant block mb-1">
-                        Từ giờ
-                      </label>
-                      <input
-                        type="time"
-                        value={startTime}
-                        onChange={(e) => setStartTime(e.target.value)}
-                        className="w-full px-1 py-1.5 bg-surface border border-outline-variant rounded-lg font-body-sm text-on-surface focus:ring-1 focus:ring-primary outline-none"
-                      />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <label className="text-[10px] text-on-surface-variant block mb-1">
-                        Đến giờ
-                      </label>
-                      <input
-                        type="time"
-                        value={endTime}
-                        onChange={(e) => setEndTime(e.target.value)}
-                        className="w-full px-1 py-1.5 bg-surface border border-outline-variant rounded-lg font-body-sm text-on-surface focus:ring-1 focus:ring-primary outline-none"
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            {hasActiveFilters ? (
-              <button
-                onClick={handleClearFilters}
-                className="w-full py-2 mt-sm bg-error-container text-on-error-container border border-error/30 rounded-xl font-label-md hover:bg-error/10 transition-colors active:scale-95 flex items-center justify-center gap-1"
-              >
-                <span className="material-symbols-outlined text-[18px]">filter_alt_off</span>
-                Xóa bộ lọc
-              </button>
-            ) : (
-              <button
-                disabled
-                className="w-full py-2 mt-sm bg-surface-variant/50 text-on-surface-variant/50 border border-outline-variant/30 rounded-xl font-label-md cursor-not-allowed flex items-center justify-center gap-1"
-              >
-                <span className="material-symbols-outlined text-[18px]">filter_alt</span>
-                Lọc
-              </button>
-            )}
-          </div>
-        </aside>
+      {/* Hero Carousel Banner */}
+      <div className="relative rounded-3xl overflow-hidden shadow-lg border border-outline-variant/30 h-[200px] md:h-[280px] mb-lg bg-[#111b21] group/carousel">
+        {CAROUSEL_SLIDES.map((slide, idx) => (
+          <div
+            key={slide.id}
+            className={`absolute inset-0 transition-all duration-1000 ease-in-out ${
+              idx === activeSlide ? 'opacity-100 z-10 visible' : 'opacity-0 z-0 invisible pointer-events-none'
+            }`}
+          >
+            {/* Background Image Layer */}
+            <div
+              className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-transform duration-[8000ms] ease-out scale-105 group-hover/carousel:scale-100"
+              style={{ backgroundImage: `url(${slide.image})`, backgroundColor: '#111b21' }}
+            />
+            {/* Gradient Overlay Layer */}
+            <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/50 to-transparent z-10" />
 
-        <section className="lg:col-span-9 flex flex-col gap-md">
-          <div className="flex justify-between items-center mb-sm">
-            <h2 className="font-headline-md text-headline-md font-semibold text-on-background flex items-center gap-2">
-              <span className="material-symbols-outlined text-primary">
-                grid_view
+            {/* Content Layer */}
+            <div className="absolute inset-0 flex flex-col justify-center p-md md:p-xl text-white max-w-xl z-20">
+              <span className="text-[10px] md:text-xs font-bold text-primary-fixed-dim tracking-widest uppercase mb-1">
+                {slide.subtitle}
               </span>
-              Bảng tin tổng hợp
-            </h2>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-md">
-            {displayedPosts.map((post) => (
-              <div
-                key={post.id}
-                className="bg-white/80 backdrop-blur-sm border border-outline-variant/30 rounded-2xl p-md flex flex-col gap-sm hover:shadow-md transition-shadow cursor-pointer relative overflow-hidden group"
-                onClick={() => {
-                  setSelectedPost(post);
-                  setIsModalOpen(true);
-                }}
+              <h2 className="text-[20px] md:text-[28px] font-bold tracking-tight mb-2 leading-tight">
+                {slide.title}
+              </h2>
+              <p className="text-[11px] md:text-sm text-gray-300 line-clamp-2 mb-4">
+                {slide.description}
+              </p>
+              <button
+                onClick={() => navigate(slide.link)}
+                className="w-max bg-primary text-on-primary px-5 py-2.5 rounded-xl font-label-md text-sm hover:opacity-90 active:scale-95 transition-all shadow-md shadow-primary/20 flex items-center gap-1"
               >
-                <div className="absolute inset-0 bg-gradient-to-r from-surface-variant/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                <div className="flex justify-between items-start relative z-10">
-                  <div className="flex items-center gap-sm">
-                    <div className="w-12 h-12 rounded-full overflow-hidden bg-surface-variant border border-outline-variant/20">
-                      <img
-                        className="w-full h-full object-cover"
-                        alt={post.authorName}
-                        src={post.authorAvatar}
-                      />
-                    </div>
-                    <div>
-                      <h3 className="font-title-lg text-[16px] leading-[24px] font-bold text-on-background">
-                        {post.authorName}
-                      </h3>
-                      <p className="font-body-sm text-[12px] text-on-surface-variant">
-                        {post.postedTime}
-                      </p>
-                    </div>
-                  </div>
-                  <button className="text-on-surface-variant">
-                    <span className="material-symbols-outlined text-[20px]">
-                      more_horiz
-                    </span>
-                  </button>
-                </div>
-                <div className="flex gap-2 relative z-10">
-                  <span
-                    className={`px-3 py-1 text-[12px] font-bold rounded-full flex items-center gap-1 shadow-sm ${post.type === "tournament" ? "bg-primary text-on-primary" : "bg-secondary-container text-on-secondary-container"}`}
-                  >
-                    <span className="material-symbols-outlined text-[14px]">
-                      {post.type === "tournament"
-                        ? "emoji_events"
-                        : "local_fire_department"}
-                    </span>
-                    {post.type === "tournament" ? "Giải đấu" : "Kèo vãng lai"}
-                  </span>
-                  <span
-                    className={`px-2 py-1 text-[10px] font-bold rounded-full uppercase tracking-wider flex items-center ${post.statusText === "Sắp đóng" ? "bg-[#891933] text-white" : "bg-surface-container-high text-on-surface"}`}
-                  >
-                    {post.statusText}
-                  </span>
-                </div>
-                {post.title && (
-                  <h4 className="font-title-lg text-title-lg font-bold text-on-background mt-sm relative z-10">
-                    {post.title}
-                  </h4>
-                )}
-                <p
-                  className={`font-body-md text-body-md text-on-surface-variant relative z-10 line-clamp-2 ${!post.title ? "mt-xs" : ""}`}
-                >
-                  {post.desc}
-                </p>
-                <div className="flex flex-col gap-2 mt-sm relative z-10 bg-surface-container-lowest p-3 rounded-xl border border-outline-variant/30">
-                  <div className="flex items-center gap-2 text-on-surface">
-                    <span className="material-symbols-outlined text-[18px] text-tertiary">
-                      location_on
-                    </span>
-                    <span className="font-body-sm text-body-sm">
-                      {post.location}
-                    </span>
-                  </div>
-                  {post.type === "tournament" ? (
-                    <>
-                      <div className="flex items-center gap-2 text-on-surface">
-                        <span className="material-symbols-outlined text-[18px] text-tertiary">
-                          calendar_today
-                        </span>
-                        <span className="font-body-sm text-body-sm">
-                          {post.dateStr}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2 text-on-surface">
-                        <span className="material-symbols-outlined text-[18px] text-tertiary">
-                          payments
-                        </span>
-                        <span className="font-body-sm text-body-sm font-semibold">
-                          {post.fee}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2 text-on-surface">
-                        <span className="material-symbols-outlined text-[18px] text-tertiary">
-                          groups
-                        </span>
-                        <span className="font-body-sm text-body-sm font-semibold text-primary">
-                          {getRegCount(post.id)}/{post.limit || 32} VĐV đã đăng
-                          ký
-                        </span>
-                      </div>
-                    </>
-                  ) : (
-                    <div className="flex items-center gap-2 text-on-surface">
-                      <span className="material-symbols-outlined text-[18px] text-tertiary">
-                        schedule
-                      </span>
-                      <span className="font-body-sm text-body-sm">
-                        {post.schedule}
-                      </span>
-                    </div>
-                  )}
-                </div>
-                <div className="mt-auto pt-sm border-t border-outline-variant/30 flex justify-end relative z-10">
-                  <button className="font-label-md text-label-md text-primary hover:text-primary-fixed-dim transition-colors flex items-center gap-1">
-                    {post.type === "tournament"
-                      ? "Xem chi tiết"
-                      : "Xem bài viết"}{" "}
-                    <span className="material-symbols-outlined text-[16px]">
-                      arrow_forward
-                    </span>
-                  </button>
-                </div>
-              </div>
-            ))}
-            {filteredPosts.length === 0 && (
-              <div className="col-span-full py-xl text-center text-on-surface-variant flex flex-col items-center">
-                <span className="material-symbols-outlined text-[48px] mb-2 opacity-50">
-                  search_off
-                </span>
-                <p>Không tìm thấy kết quả nào cho "{query}"</p>
-              </div>
-            )}
-            {displayCount < filteredPosts.length && (
-              <div
-                ref={observerTarget}
-                className="col-span-full py-4 text-center"
-              >
-                <div className="inline-block w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
-              </div>
-            )}
+                Xem chi tiết giải <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
+              </button>
+            </div>
           </div>
-        </section>
+        ))}
+
+        {/* Slide Indicators */}
+        <div className="absolute bottom-3 right-4 z-30 flex gap-2">
+          {CAROUSEL_SLIDES.map((_, idx) => (
+            <button
+              key={idx}
+              onClick={() => setActiveSlide(idx)}
+              className={`h-2.5 rounded-full transition-all ${
+                idx === activeSlide ? 'bg-primary scale-110 w-6' : 'bg-white/50 hover:bg-white w-2.5'
+              }`}
+            />
+          ))}
+        </div>
       </div>
 
+      {/* Horizontal Filter Bar with relative and z-30 stack index */}
+      <div className="relative z-30 bg-white/80 backdrop-blur-md border border-outline-variant/30 shadow-md rounded-3xl p-md mb-md flex flex-col gap-md">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-sm items-center w-full">
+          {/* Ô Tìm Kiếm */}
+          <div className="relative lg:col-span-3">
+            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">
+              search
+            </span>
+            <input
+              type="text"
+              placeholder="Tìm giải đấu, kèo..."
+              value={query}
+              onChange={handleSearchChange}
+              className="w-full pl-10 pr-4 py-2.5 bg-surface-container-low border border-outline-variant rounded-2xl font-body-sm text-on-surface outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+            />
+          </div>
+
+          {/* Lọc Môn Thể Thao */}
+          <div className="flex bg-surface-container-low p-1 rounded-2xl border border-outline-variant/50 lg:col-span-3">
+            <button
+              onClick={() => handleSportFilterChange('')}
+              className={`flex-1 py-2 px-3 rounded-xl font-label-md text-xs font-semibold transition-all ${
+                sportFilter === '' ? 'bg-primary text-on-primary shadow-sm' : 'text-on-surface-variant hover:text-primary'
+              }`}
+            >
+              Tất cả
+            </button>
+            <button
+              onClick={() => handleSportFilterChange('badminton')}
+              className={`flex-1 py-2 px-3 rounded-xl font-label-md text-xs font-semibold transition-all flex items-center justify-center gap-1 ${
+                sportFilter === 'badminton' ? 'bg-primary text-on-primary shadow-sm' : 'text-on-surface-variant hover:text-primary'
+              }`}
+            >
+              🏸 Cầu lông
+            </button>
+            <button
+              onClick={() => handleSportFilterChange('pickleball')}
+              className={`flex-1 py-2 px-3 rounded-xl font-label-md text-xs font-semibold transition-all flex items-center justify-center gap-1 ${
+                sportFilter === 'pickleball' ? 'bg-primary text-on-primary shadow-sm' : 'text-on-surface-variant hover:text-primary'
+              }`}
+            >
+              🏓 Pickleball
+            </button>
+          </div>
+
+          {/* Lọc Sân */}
+          <div className="relative lg:col-span-2">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setOpenDropdown(openDropdown === 'court' ? null : 'court');
+                setShowDatePicker(false);
+              }}
+              className="w-full flex items-center justify-between px-3 py-2.5 bg-surface-container-low border border-outline-variant rounded-2xl font-body-sm text-on-surface hover:border-primary transition-all text-left"
+            >
+              <span className="flex items-center gap-2 truncate">
+                <span className="material-symbols-outlined text-[18px] text-primary">location_on</span>
+                <span className="truncate font-semibold text-on-surface">{courtQuery || 'Tất cả các sân'}</span>
+              </span>
+              <span className="material-symbols-outlined text-[18px] text-on-surface-variant">expand_more</span>
+            </button>
+
+            {openDropdown === 'court' && (
+              <div className="absolute left-0 top-full mt-2 w-[240px] z-50 bg-white border border-outline-variant shadow-xl rounded-2xl p-1.5 flex flex-col gap-0.5 max-h-[250px] overflow-y-auto custom-scrollbar animate-fade-in-up" onClick={e => e.stopPropagation()}>
+                <button
+                  onClick={() => { handleCourtChange(''); setOpenDropdown(null); }}
+                  className={`w-full text-left px-3 py-2 rounded-xl text-body-sm hover:bg-surface-container-low transition-colors ${!courtQuery ? 'bg-primary/5 text-primary font-semibold' : 'text-on-surface'}`}
+                >
+                  Tất cả các sân
+                </button>
+                {COURTS.map(c => (
+                  <button
+                    key={c}
+                    onClick={() => { handleCourtChange(c); setOpenDropdown(null); }}
+                    className={`w-full text-left px-3 py-2 rounded-xl text-body-sm hover:bg-surface-container-low transition-colors ${courtQuery === c ? 'bg-primary/5 text-primary font-semibold' : 'text-on-surface'}`}
+                  >
+                    {c}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Lọc Trình Độ */}
+          <div className="relative lg:col-span-2">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setOpenDropdown(openDropdown === 'level' ? null : 'level');
+                setShowDatePicker(false);
+              }}
+              className="w-full flex items-center justify-between px-3 py-2.5 bg-surface-container-low border border-outline-variant rounded-2xl font-body-sm text-on-surface hover:border-primary transition-all text-left"
+            >
+              <span className="flex items-center gap-2 truncate">
+                <span className="material-symbols-outlined text-[18px] text-primary">military_tech</span>
+                <span className="truncate font-semibold text-on-surface">{getLevelButtonLabel()}</span>
+              </span>
+              <span className="material-symbols-outlined text-[18px] text-on-surface-variant">expand_more</span>
+            </button>
+
+            {openDropdown === 'level' && (
+              <div className="absolute left-0 top-full mt-2 w-[240px] z-50 bg-white border border-outline-variant shadow-xl rounded-2xl p-1.5 flex flex-col gap-0.5 max-h-[320px] overflow-y-auto custom-scrollbar animate-fade-in-up" onClick={e => e.stopPropagation()}>
+                {getLevelOptions().map((item, idx) => {
+                  const options = getLevelOptions();
+                  const showHeader = idx === 0 || options[idx - 1].group !== item.group;
+                  return (
+                    <React.Fragment key={idx}>
+                      {showHeader && item.group && item.group !== 'all' && (
+                        <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-on-surface-variant/70 bg-surface-container-low rounded-lg my-1 first:mt-0">
+                          {item.group}
+                        </div>
+                      )}
+                      <button
+                        onClick={() => { setLevel(item.value); setOpenDropdown(null); }}
+                        className={`w-full text-left px-3 py-2 rounded-xl text-body-sm hover:bg-surface-container-low transition-colors ${level === item.value ? 'bg-primary/5 text-primary font-semibold' : 'text-on-surface'}`}
+                      >
+                        {item.label}
+                      </button>
+                    </React.Fragment>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* Bộ chọn Ngày */}
+          <div className="relative lg:col-span-2">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowDatePicker(!showDatePicker);
+                setOpenDropdown(null);
+              }}
+              className="w-full flex items-center justify-between px-3 py-2.5 bg-surface-container-low border border-outline-variant rounded-2xl font-body-sm text-on-surface hover:border-primary transition-all text-left"
+            >
+              <span className="flex items-center gap-2 truncate">
+                <span className="material-symbols-outlined text-[18px] text-primary">calendar_today</span>
+                <span className="truncate font-semibold text-on-surface">
+                  {startDate ? `${startDate.toLocaleDateString('vi-VN')} ${endDate ? `- ${endDate.toLocaleDateString('vi-VN')}` : ''}` : 'Chọn ngày'}
+                </span>
+              </span>
+              <span className="material-symbols-outlined text-[18px] text-on-surface-variant">expand_more</span>
+            </button>
+
+            {showDatePicker && (
+              <div className="absolute right-0 top-full mt-2 z-50 bg-white border border-outline-variant shadow-2xl rounded-3xl p-4 custom-datepicker animate-fade-in-up" onClick={e => e.stopPropagation()}>
+                <DatePicker
+                  selectsRange={true}
+                  startDate={startDate}
+                  endDate={endDate}
+                  onChange={(update) => setDateRange(update)}
+                  inline
+                />
+                <button
+                  onClick={() => setShowDatePicker(false)}
+                  className="w-full py-2 mt-2 bg-primary text-on-primary rounded-xl font-label-md hover:opacity-90 text-sm shadow-md"
+                >
+                  Xác nhận
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Clear filters row */}
+        {hasActiveFilters && (
+          <div className="flex justify-end">
+            <button
+              onClick={handleClearFilters}
+              className="px-4 py-1.5 bg-error-container text-on-error-container border border-error/30 rounded-xl font-label-md text-sm hover:bg-error/10 transition-colors active:scale-95 flex items-center gap-1"
+            >
+              <span className="material-symbols-outlined text-[16px]">filter_alt_off</span>
+              Xóa bộ lọc
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Quick Search Tags */}
+      <div className="flex flex-wrap gap-2 mb-xl items-center px-1">
+        <span className="text-[11px] font-bold text-on-surface-variant/80 uppercase tracking-wider mr-2">Gợi ý lọc:</span>
+        {QUICK_TAGS.map((tag, idx) => {
+          const isActive = isTagActive(tag.action);
+          return (
+            <button
+              key={idx}
+              onClick={() => handleQuickTagClick(tag.action)}
+              className={`px-3.5 py-1.5 rounded-full border text-xs font-semibold transition-all shadow-sm active:scale-95 ${
+                isActive
+                  ? 'bg-primary text-on-primary border-primary'
+                  : 'bg-white/60 border-outline-variant/30 text-on-surface-variant hover:border-primary hover:text-primary hover:bg-primary/5'
+              }`}
+            >
+              {tag.label}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Grid bài đăng chính */}
+      <section className="flex flex-col gap-md">
+        <div className="flex justify-between items-center mb-sm">
+          <h2 className="font-headline-md text-headline-md font-bold text-on-background flex items-center gap-2">
+            <span className="material-symbols-outlined text-primary text-[28px]">sports_tennis</span>
+            Bảng tin tổng hợp
+          </h2>
+          <span className="text-sm font-semibold text-on-surface-variant">{filteredPosts.length} kết quả</span>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-md">
+          {displayedPosts.map((post, idx) => {
+            const isTournament = post.type === 'tournament';
+
+            return (
+              <div
+                key={post.id}
+                onClick={() => {
+                  if (isTournament) {
+                    navigate(`/tournaments/${post.id}`);
+                  } else {
+                    setSelectedPost(post);
+                    setIsModalOpen(true);
+                  }
+                }}
+                className="relative z-10 bg-white/80 backdrop-blur-sm border border-outline-variant/30 rounded-3xl overflow-hidden flex flex-col hover:shadow-2xl hover:-translate-y-2 transform transition-all duration-300 cursor-pointer group h-full shadow-sm animate-fade-in-up"
+                style={{ animationDelay: `${(idx % 4) * 0.08}s` }}
+              >
+                {/* 1. THẺ GIẢI ĐẤU (CÓ BANNER LỚN) */}
+                {isTournament ? (
+                  <>
+                    <div className="relative h-[160px] w-full overflow-hidden bg-gradient-to-br from-primary/10 to-primary/5">
+                      <img
+                        src={post.coverImage}
+                        alt={post.title}
+                        onError={(e) => {
+                          e.currentTarget.onerror = null;
+                          e.currentTarget.style.opacity = '0';
+                        }}
+                        className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                      <span className={`absolute top-3 left-3 px-2.5 py-0.5 text-[10px] font-bold rounded-full uppercase tracking-wider text-white shadow-sm ${
+                        post.sport === 'badminton' ? 'bg-[#2e7d32]' : 'bg-[#e65100]'
+                      }`}>
+                        {post.sportLabel}
+                      </span>
+                      <span className="absolute top-3 right-3 px-2 py-0.5 text-[10px] font-bold bg-[#e8f5e9] text-[#2e7d32] rounded-full shadow-sm">
+                        {post.statusText}
+                      </span>
+                    </div>
+
+                    <div className="p-md flex flex-col flex-1 gap-xs">
+                      <div className="flex items-center gap-2 mb-1">
+                        <img src={post.authorAvatar} alt="" className="w-5 h-5 rounded-full object-cover border border-outline-variant/30" />
+                        <span className="font-label-md text-[11px] text-on-surface-variant font-semibold truncate">{post.authorName}</span>
+                      </div>
+                      <h3 className="font-title-lg text-[16px] leading-[22px] font-bold text-on-background line-clamp-2 min-h-[44px]">
+                        {post.title}
+                      </h3>
+                      <p className="font-body-sm text-[12px] text-on-surface-variant line-clamp-2 mb-2">
+                        {post.desc}
+                      </p>
+
+                      <div className="mt-auto space-y-1.5 bg-surface-container-lowest p-3 rounded-2xl border border-outline-variant/20">
+                        <div className="flex items-center gap-2 text-on-surface text-[12px]">
+                          <span className="material-symbols-outlined text-[16px] text-primary">location_on</span>
+                          <span className="truncate">{post.location}</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-on-surface text-[12px]">
+                          <span className="material-symbols-outlined text-[16px] text-primary">calendar_today</span>
+                          <span>{post.dateStr}</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-on-surface text-[12px] font-bold text-[#00685f]">
+                          <span className="material-symbols-outlined text-[16px] text-primary">payments</span>
+                          <span>{post.fee}</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-on-surface text-[12px] font-semibold text-primary">
+                          <span className="material-symbols-outlined text-[16px] text-primary">groups</span>
+                          <span>{getRegCount(post.id)}/{post.limit || 32} VĐV đã đăng ký</span>
+                        </div>
+                      </div>
+
+                      <button className="w-full mt-3 py-2 bg-primary text-on-primary rounded-xl font-label-md text-sm hover:opacity-95 shadow-sm active:scale-95 transition-all">
+                        Đăng ký ngay
+                      </button>
+                    </div>
+                  </>
+                ) : (
+                  /* 2. THẺ KÈO ĐẤU */
+                  <div className="p-md flex flex-col flex-1 gap-xs justify-between">
+                    <div>
+                      <div className="flex justify-between items-start mb-2">
+                        <div className="flex items-center gap-2">
+                          <img src={post.authorAvatar} alt="" className="w-9 h-9 rounded-full object-cover border border-outline-variant/30" />
+                          <div>
+                            <h4 className="font-title-lg text-[13px] leading-[18px] font-bold text-on-background">{post.authorName}</h4>
+                            <span className="text-[10px] text-on-surface-variant block">{post.postedTime}</span>
+                          </div>
+                        </div>
+                        <div className="flex flex-col gap-1 items-end">
+                          <span className={`px-2 py-0.5 text-[9px] font-bold rounded-full uppercase tracking-wider text-white ${
+                            post.sport === 'badminton' ? 'bg-[#2e7d32]/80' : 'bg-[#e65100]/80'
+                          }`}>
+                            {post.sportLabel}
+                          </span>
+                          <span className="px-2 py-0.5 text-[9px] font-bold bg-[#e8f5e9] text-[#2e7d32] rounded-full">
+                            {post.statusText}
+                          </span>
+                        </div>
+                      </div>
+
+                      <h3 className="font-title-lg text-[15px] leading-[20px] font-bold text-on-background mb-1">
+                        {post.title}
+                      </h3>
+                      <p className="font-body-sm text-[12px] text-on-surface-variant line-clamp-3 mb-3">
+                        {post.desc}
+                      </p>
+                    </div>
+
+                    <div className="space-y-2 mt-auto">
+                      <div className="grid grid-cols-2 gap-1.5 bg-surface-container-low p-2.5 rounded-xl text-[11px] border border-outline-variant/20">
+                        <div className="flex items-center gap-1.5 text-on-surface">
+                          <span className="material-symbols-outlined text-[14px] text-primary">schedule</span>
+                          <span className="font-semibold truncate">{post.schedule}</span>
+                        </div>
+                        <div className="flex items-center gap-1.5 text-on-surface">
+                          <span className="material-symbols-outlined text-[14px] text-primary">stars</span>
+                          <span className="font-semibold truncate">{post.level}</span>
+                        </div>
+                        <div className="flex items-center gap-1.5 text-on-surface">
+                          <span className="material-symbols-outlined text-[14px] text-primary">payments</span>
+                          <span className="font-semibold truncate">{post.fee}</span>
+                        </div>
+                        <div className="flex items-center gap-1.5 text-on-surface">
+                          <span className="material-symbols-outlined text-[14px] text-primary">group</span>
+                          <span className="font-semibold truncate text-[#d32f2f]">{post.slots}</span>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-1.5 text-on-surface-variant text-[11px] px-1 truncate">
+                        <span className="material-symbols-outlined text-[14px]">location_on</span>
+                        <span className="truncate">{post.location}</span>
+                      </div>
+
+                      <button className="w-full py-2 bg-secondary-container text-on-secondary-container rounded-xl font-label-md text-sm hover:opacity-95 active:scale-95 transition-all">
+                        Tham gia kèo
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+
+          {filteredPosts.length === 0 && (
+            <div className="col-span-full py-xl text-center text-on-surface-variant flex flex-col items-center">
+              <span className="material-symbols-outlined text-[48px] mb-2 opacity-50">search_off</span>
+              <p>Không tìm thấy kết quả nào cho tiêu chí của bạn</p>
+            </div>
+          )}
+
+          {/* Infinity Scroll Target */}
+          {displayCount < filteredPosts.length && (
+            <div ref={observerTarget} className="col-span-full py-4 text-center">
+              <div className="inline-block w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* Modals - Combined from both branches */}
       <TournamentDetailsModal
-        isOpen={isModalOpen && selectedPost?.type === "tournament"}
+        isOpen={isModalOpen && selectedPost?.type === 'tournament'}
         onClose={() => setIsModalOpen(false)}
         post={selectedPost}
       />
       <MatchDetailsModal
-        isOpen={isModalOpen && selectedPost?.type === "match"}
+        isOpen={isModalOpen && selectedPost?.type === 'match'}
         onClose={() => setIsModalOpen(false)}
         post={selectedPost}
       />
