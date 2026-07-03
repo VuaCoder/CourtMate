@@ -5,6 +5,7 @@ import { Footer } from '../components/landing/Footer';
 import { Header } from '../components/landing/Header';
 
 import { useNavigate } from 'react-router-dom';
+import SportsBackground from '../components/SportsBackground';
 
 export default function UserLayout({ children }: { children: React.ReactNode }) {
   const { logout } = useAuth();
@@ -16,7 +17,10 @@ export default function UserLayout({ children }: { children: React.ReactNode }) 
   };
 
   return (
-    <div className="bg-background text-on-background min-h-screen flex flex-col antialiased">
+    <div className="bg-background text-on-background min-h-screen flex flex-col antialiased relative overflow-hidden">
+      {/* Sports Background Pattern */}
+      <SportsBackground />
+
       {/* 100% Synchronized Header */}
       <Header />
 
@@ -41,10 +45,10 @@ export default function UserLayout({ children }: { children: React.ReactNode }) 
           <span className="material-symbols-outlined mb-1 text-[24px]">sports_tennis</span>
           <span className="text-[10px] font-semibold">Kèo của tôi</span>
         </Link>
-        <button onClick={handleLogout} className="flex flex-col items-center justify-center text-on-surface-variant hover:opacity-80 active:scale-90 transition-transform">
+        <Link to="/profile" className="flex flex-col items-center justify-center text-on-surface-variant hover:opacity-80 active:scale-90 transition-transform">
           <span className="material-symbols-outlined mb-1 text-[24px]">person</span>
           <span className="text-[10px] font-semibold">Hồ sơ</span>
-        </button>
+        </Link>
       </nav>
     </div>
   );

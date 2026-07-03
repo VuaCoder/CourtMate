@@ -1,0 +1,56 @@
+services:
+  # 1. Dịch vụ Backend (NestJS Web Service)
+  - type: web
+    name: courtmate-backend
+    env: node
+    plan: free # Sử dụng gói miễn phí của Render (hoặc thay đổi tùy nhu cầu)
+    buildCommand: npm install && npm run build --workspace=backend
+    startCommand: npm run start:prod --workspace=backend
+    autoDeploy: true
+    buildFilter:
+      paths:
+        - apps/backend/**
+        - package.json
+        - package-lock.json
+        - render.yaml
+    envVars:
+      - key: PORT
+        value: 3000
+      - key: MONGODB_URI
+        sync: false # Giá trị cấu hình thủ công trên Render Dashboard để đảm bảo bảo mật
+      - key: JWT_SECRET
+        sync: false
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
+        sync: false
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+
+  # 2. Dịch vụ Frontend (Vite Static Site)
+  - type: web
+    name: courtmate-frontend
+    env: static
+    buildCommand: npm install && npm run build --workspace=frontend-web
+    staticPublishPath: apps/frontend-web/dist
+    envVars:
+      - key: VITE_API_URL
+        value: https://courtmate-backend.onrender.com
+      - key: VITE_GOOGLE_CLIENT_ID
+        value: 863885147457-sh19titrqk9rhdf5d5af6vm3nqn9l9s9.apps.googleusercontent.com
+      - key: VITE_GOOGLE_REDIRECT_URI
+        value: https://courtmate-frontend.onrender.com
+    autoDeploy: true
+    buildFilter:
+      paths:
+        - apps/frontend-web/**
+        - package.json
+        - package-lock.json
+        - render.yaml
+    routes:
+      # Định tuyến SPA: Chuyển toàn bộ yêu cầu về index.html để React Router xử lý
+      - type: rewrite
+        source: /*
+        destination: /index.html

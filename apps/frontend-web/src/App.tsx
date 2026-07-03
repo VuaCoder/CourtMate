@@ -9,10 +9,13 @@ import HostTournamentsPage from './pages/HostTournamentsPage';
 import HostPendingApprovalsPage from './pages/HostPendingApprovalsPage';
 import HostConfirmedAthletesPage from './pages/HostConfirmedAthletesPage';
 import TournamentsPage from './pages/TournamentsPage';
+import TournamentDetailPage from './pages/TournamentDetailPage';
 import ParticipantsPage from './pages/ParticipantsPage';
+import ProfilePage from './pages/ProfilePage';
 import CreateTournamentPage from './pages/CreateTournamentPage';
 import EventDetailPage from './pages/EventDetailPage';
 import AnalyticsPage from './pages/AnalyticsPage';
+import AdminPage from './pages/AdminPage';
 import Layout from './components/Layout';
 import LoadingScreen, { LoadingOverlay } from './components/LoadingScreen';
 import { AuthProvider } from './context/AuthContext';
@@ -144,9 +147,12 @@ function App() {
               <Route path="/host/pending-approvals" element={<ProtectedRoute allowedRoles={['host', 'admin']}><Layout><HostPendingApprovalsPage /></Layout></ProtectedRoute>} />
               <Route path="/host/confirmed-athletes" element={<ProtectedRoute allowedRoles={['host', 'admin']}><Layout><HostConfirmedAthletesPage /></Layout></ProtectedRoute>} />
               <Route path="/event/:eventId" element={<ProtectedRoute allowedRoles={['host', 'admin']}><Layout><EventDetailPage /></Layout></ProtectedRoute>} />
+              <Route path="/admin" element={<ProtectedRoute allowedRoles={['admin']}><Layout><AdminPage /></Layout></ProtectedRoute>} />
               
               {/* All authenticated users */}
               <Route path="/tournaments" element={<ProtectedRoute allowedRoles={['user', 'host', 'admin']}><Layout><TournamentsPage /></Layout></ProtectedRoute>} />
+              <Route path="/profile" element={<ProtectedRoute allowedRoles={['user']}><Layout><ProfilePage /></Layout></ProtectedRoute>} />
+              <Route path="/tournaments/:id" element={<ProtectedRoute allowedRoles={['user', 'host', 'admin']}><Layout><TournamentDetailPage /></Layout></ProtectedRoute>} />
             </Routes>
 
             {/* Global Animated Toast Notification */}

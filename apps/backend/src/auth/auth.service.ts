@@ -10,14 +10,20 @@ export class AuthService {
 
   constructor(
     private usersService: UsersService,
-    private jwtService: JwtService
+    private jwtService: JwtService,
   ) {
-    this.googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID || 'YOUR_GOOGLE_CLIENT_ID');
+    this.googleClient = new OAuth2Client(
+      process.env.GOOGLE_CLIENT_ID || 'YOUR_GOOGLE_CLIENT_ID',
+    );
   }
 
   async validateUser(identifier: string, pass: string): Promise<any> {
     const user = await this.usersService.findByIdentifier(identifier);
-    if (user && user.passwordHash && await bcrypt.compare(pass, user.passwordHash)) {
+    if (
+      user &&
+      user.passwordHash &&
+      (await bcrypt.compare(pass, user.passwordHash))
+    ) {
       const { passwordHash, ...result } = user.toObject();
       return result;
     }
@@ -25,26 +31,43 @@ export class AuthService {
   }
 
   async login(user: any) {
-    const payload = { identifier: user.identifier, sub: user._id, role: user.role };
+    const payload = {
+      identifier: user.identifier,
+      sub: user._id,
+      role: user.role,
+    };
     return {
       access_token: this.jwtService.sign(payload),
     };
   }
 
-  async register(identifier: string, pass: string, name?: string, role?: string) {
+  async register(
+    identifier: string,
+    pass: string,
+    name?: string,
+    role?: string,
+  ) {
     const salt = await bcrypt.genSalt();
     const passwordHash = await bcrypt.hash(pass, salt);
-    const newUser = await this.usersService.create({ identifier, passwordHash, name, role: role || 'athlete' });
+    const newUser = await this.usersService.create({
+      identifier,
+      passwordHash,
+      name,
+      role: role || 'athlete',
+    });
     return this.login(newUser);
   }
 
   async googleLogin(token: string, role?: string) {
     try {
       // Vì frontend dùng useGoogleLogin (implicit flow) nên token nhận được là access_token, không phải idToken
-      const response = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      
+      const response = await fetch(
+        'https://www.googleapis.com/oauth2/v3/userinfo',
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
+
       if (!response.ok) {
         throw new UnauthorizedException('Invalid Google access token');
       }

@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import SportsBackground from '../components/SportsBackground';
 
 export default function HostAdminLayout({ children }: { children: React.ReactNode }) {
   const location = useLocation();
@@ -49,6 +50,9 @@ export default function HostAdminLayout({ children }: { children: React.ReactNod
       {/* Animated Background Blobs */}
       <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-primary/20 rounded-full blur-[100px] pointer-events-none animate-pulse"></div>
       <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-secondary/20 rounded-full blur-[100px] pointer-events-none animate-pulse" style={{ animationDelay: '2s' }}></div>
+
+      {/* Sports Background Pattern */}
+      <SportsBackground />
 
       {/* SideNavBar */}
       <nav className="hidden md:flex flex-col h-full p-md space-y-base bg-white/60 backdrop-blur-xl border-r border-white/50 shadow-[4px_0_24px_rgba(0,0,0,0.02)] w-64 fixed left-0 top-0 z-40">
