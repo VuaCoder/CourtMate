@@ -6,10 +6,11 @@ services:
     plan: free # Sử dụng gói miễn phí của Render (hoặc thay đổi tùy nhu cầu)
     buildCommand: npm install && npm run build --workspace=backend
     startCommand: npm run start:prod --workspace=backend
-    filePathPatterns:
-      - apps/backend/**
-      - package.json
-      - package-lock.json
+    buildFilter:
+      paths:
+        - apps/backend/**
+        - package.json
+        - package-lock.json
     envVars:
       - key: PORT
         value: 3000
@@ -33,10 +34,11 @@ services:
     plan: free
     buildCommand: npm install && npm run build --workspace=frontend-web
     staticPublishPath: apps/frontend-web/dist
-    filePathPatterns:
-      - apps/frontend-web/**
-      - package.json
-      - package-lock.json
+    buildFilter:
+      paths:
+        - apps/frontend-web/**
+        - package.json
+        - package-lock.json
     routes:
       # Định tuyến SPA: Chuyển toàn bộ yêu cầu về index.html để React Router xử lý
       - type: rewrite
