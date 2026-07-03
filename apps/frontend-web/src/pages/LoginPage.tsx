@@ -67,6 +67,18 @@ export default function LoginPage() {
     onSuccess: async (tokenResponse) => {
       try {
         showLoading('Đang xác thực với Google...');
+        const profileRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+          headers: {
+            Authorization: `Bearer ${tokenResponse.access_token}`,
+          },
+        });
+
+        if (!profileRes.ok) {
+          setError('Không thể lấy thông tin tài khoản Google');
+          return;
+        }
+
+        const profile = await profileRes.json();
         const res = await fetch(`${API_URL}/auth/google`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -74,7 +86,10 @@ export default function LoginPage() {
         });
 
         if (res.ok) {
-          login(selectedRole);
+          login(selectedRole, {
+            userName: profile.name || profile.given_name || 'Khách',
+            email: profile.email || '',
+          });
         } else {
           setError('Lỗi đăng nhập Google với server');
         }

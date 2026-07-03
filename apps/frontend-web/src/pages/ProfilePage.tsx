@@ -33,7 +33,7 @@ function SectionCard({ title, subtitle, children }: { title: string; subtitle: s
 }
 
 export default function ProfilePage() {
-  const { userName, logout } = useAuth();
+  const { userName, email, logout } = useAuth();
   const navigate = useNavigate();
 
   const joinedDate = '03/07/2026';
@@ -72,7 +72,7 @@ export default function ProfilePage() {
               </div>
               <div>
                 <h2 className="text-2xl md:text-3xl font-bold text-on-surface">{userName}</h2>
-                <p className="text-on-surface-variant mt-1">gonthinh7@gmail.com</p>
+                <p className="text-on-surface-variant mt-1">{email || 'Chưa cập nhật email'}</p>
                 <div className="flex flex-wrap gap-2 mt-4">
                   <span className="px-3 py-1 rounded-full bg-[#0f7a2f]/20 text-[#3ddc84] text-sm font-semibold">Người dùng</span>
                   <span className="px-3 py-1 rounded-full bg-[#0f7a2f]/20 text-[#3ddc84] text-sm font-semibold">Đang hoạt động</span>
