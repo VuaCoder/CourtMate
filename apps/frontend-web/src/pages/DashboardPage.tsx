@@ -1,153 +1,257 @@
-import React from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
+import { HOST_EVENTS } from '../data/hostEvents';
+
+const schedule = [
+  { time: '08:30', title: 'Mở cổng check-in', meta: 'Da Nang Open Badminton 2026' },
+  { time: '10:00', title: 'Bốc thăm vòng bảng', meta: 'Summer Club Cup 2026' },
+  { time: '14:00', title: 'Chốt danh sách thi đấu', meta: 'Friendly Mix Doubles' },
+  { time: '16:30', title: 'Gửi thông báo cho VĐV', meta: 'Tất cả sự kiện đang mở' },
+];
+
+const checklist = ['Kiểm tra sân bãi và khung giờ', 'Chốt danh sách trọng tài', 'Xuất danh sách bốc thăm', 'Gửi thông báo xác nhận cho VĐV'];
+const recentActivity = ['Có 12 đăng ký mới trong 1 giờ qua.', 'Biểu mẫu giải đấu vừa được cập nhật thành công.', '3 vận động viên được duyệt vào bảng chính.', 'Một sự kiện đã chạm mốc 100% số lượng slot.'];
 
 export default function DashboardPage() {
+  const [registrations, setRegistrations] = useState<any[]>(() => {
+    const saved = localStorage.getItem('courtmate_registrations');
+    return saved ? JSON.parse(saved) : [];
+  });
+
+  useEffect(() => {
+    const handleStorage = () => {
+      const saved = localStorage.getItem('courtmate_registrations');
+      if (saved) {
+        setRegistrations(JSON.parse(saved));
+      }
+    };
+    window.addEventListener('storage', handleStorage);
+    const interval = setInterval(handleStorage, 1000);
+    return () => {
+      window.removeEventListener('storage', handleStorage);
+      clearInterval(interval);
+    };
+  }, []);
+
+  const { pendingCount, approvedCount, approvalQueue } = useMemo(() => {
+    const pending = registrations.filter((r) => r.status === 'pending');
+    const approved = registrations.filter((r) => r.status === 'approved');
+    
+    // Map registrations queue to list
+    const queue = pending.map((r) => ({
+      id: r.id,
+      name: r.name,
+      event: r.tournament,
+      time: r.date || 'Vừa xong',
+      action: 'Chờ duyệt'
+    }));
+
+    // Fallback if empty to make the dashboard look nice
+    if (queue.length === 0) {
+      queue.push(
+        { id: 1, name: 'Lê Minh Khoa', event: 'Da Nang Open Badminton 2026', time: '2 phút trước', action: 'Xác minh hồ sơ' },
+        { id: 2, name: 'Nguyễn Thu Hà', event: 'Summer Club Cup 2026', time: '14 phút trước', action: 'Xét hạng mục đôi' },
+        { id: 3, name: 'Alex Chen', event: 'Friendly Mix Doubles', time: '1 giờ trước', action: 'Chờ thanh toán' }
+      );
+    }
+
+    return {
+      pendingCount: pending.length,
+      approvedCount: approved.length,
+      approvalQueue: queue.slice(0, 5)
+    };
+  }, [registrations]);
+
+  const metrics = useMemo(() => {
+    return [
+      { key: 'events', label: 'Sự kiện đang quản lý', value: '3' },
+      { key: 'pending', label: 'Đơn đăng ký chờ duyệt', value: String(pendingCount) },
+      { key: 'athletes', label: 'Vận động viên đã xác nhận', value: String(approvedCount + 12) }, // base offset 12 for mock
+      { key: 'fill', label: 'Tỉ lệ lấp đầy trung bình', value: '86%' },
+    ];
+  }, [pendingCount, approvedCount]);
+
   return (
-    <>
-      {/* Header */}
-      <header className="flex justify-between items-center mb-xl">
-        <div>
-          <h1 className="font-headline-lg text-headline-lg font-bold text-on-background">Tổng quan quản lý</h1>
-          <p className="font-body-md text-body-md text-on-surface-variant mt-sm">Chào mừng trở lại. Đây là cập nhật mới nhất hôm nay.</p>
-        </div>
-        <div className="flex gap-4">
-          <button className="relative p-2 rounded-full bg-surface-container hover:bg-surface-variant transition-colors text-on-surface">
-            <span className="material-symbols-outlined">notifications</span>
-            <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-secondary rounded-full border-2 border-surface-container"></span>
-          </button>
-          <button className="bg-primary text-on-primary px-6 py-2 rounded-lg font-label-md text-label-md shadow-sm hover:bg-primary-container hover:text-on-primary-container transition-colors flex items-center gap-2">
-            <span className="material-symbols-outlined text-[18px]">add_circle</span>
-            Tạo giải đấu mới
-          </button>
-        </div>
-      </header>
-
-      {/* Stats Bento Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-lg mb-xl">
-        <div className="bg-white/60 backdrop-blur-xl border border-white/50 shadow-[0_8px_32px_rgba(0,0,0,0.04)] rounded-3xl p-lg flex flex-col justify-between hover:-translate-y-1 hover:shadow-[0_16px_48px_rgba(0,0,0,0.08)] transition-all duration-300">
-          <div className="flex justify-between items-start mb-4">
-            <div className="p-3 bg-primary-container/20 rounded-lg text-primary">
-              <span className="material-symbols-outlined">emoji_events</span>
-            </div>
-            <span className="font-label-md text-label-md text-primary bg-primary-container/10 px-2 py-1 rounded-full">+12%</span>
+    <div className="space-y-xl animate-fade-in-up">
+      <section className="relative overflow-hidden rounded-[32px] bg-gradient-to-br from-white via-white to-primary-container/30 border border-white/70 shadow-[0_18px_60px_rgba(0,0,0,0.06)]">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(0,104,95,0.16),transparent_34%),radial-gradient(circle_at_bottom_left,rgba(33,150,243,0.12),transparent_30%)]" />
+        <div className="relative p-lg md:p-xl flex flex-col xl:flex-row xl:items-end xl:justify-between gap-lg">
+          <div className="max-w-3xl">
+            <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary-container/60 text-primary text-sm font-semibold">
+              <span className="material-symbols-outlined text-[18px]">workspace_premium</span>
+              Host dashboard
+            </span>
+            <h1 className="mt-4 font-headline-lg text-headline-lg md:text-[3rem] font-bold text-on-background leading-tight">
+              Điều phối sự kiện, đăng ký và vận hành trong một màn hình duy nhất.
+            </h1>
+            <p className="mt-3 text-on-surface-variant max-w-2xl">
+              Trung tâm điều hành cho host để theo dõi giải đấu, xử lý đơn chờ duyệt, kiểm soát lịch và mở từng sự kiện ở màn hình riêng.
+            </p>
           </div>
-          <div>
-            <h3 className="font-body-sm text-body-sm text-on-surface-variant">Tổng giải đấu</h3>
-            <p className="font-headline-md text-headline-md font-bold text-on-background mt-1">24</p>
-          </div>
-        </div>
-        
-        <div className="bg-white/60 backdrop-blur-xl border border-white/50 shadow-[0_8px_32px_rgba(0,0,0,0.04)] rounded-3xl p-lg flex flex-col justify-between hover:-translate-y-1 hover:shadow-[0_16px_48px_rgba(0,0,0,0.08)] transition-all duration-300">
-          <div className="flex justify-between items-start mb-4">
-            <div className="p-3 bg-secondary-container/20 rounded-lg text-secondary">
-              <span className="material-symbols-outlined">group</span>
-            </div>
-            <span className="font-label-md text-label-md text-primary bg-primary-container/10 px-2 py-1 rounded-full">+5.4%</span>
-          </div>
-          <div>
-            <h3 className="font-body-sm text-body-sm text-on-surface-variant">Tổng vận động viên</h3>
-            <p className="font-headline-md text-headline-md font-bold text-on-background mt-1">1,248</p>
-          </div>
-        </div>
-        
-        <div className="bg-white/60 backdrop-blur-xl border border-white/50 shadow-[0_8px_32px_rgba(0,0,0,0.04)] rounded-3xl p-lg flex flex-col justify-between hover:-translate-y-1 hover:shadow-[0_16px_48px_rgba(0,0,0,0.08)] transition-all duration-300">
-          <div className="flex justify-between items-start mb-4">
-            <div className="p-3 bg-tertiary-container/20 rounded-lg text-tertiary">
-              <span className="material-symbols-outlined">payments</span>
-            </div>
-            <span className="font-label-md text-label-md text-secondary bg-secondary-container/10 px-2 py-1 rounded-full">-2.1%</span>
-          </div>
-          <div>
-            <h3 className="font-body-sm text-body-sm text-on-surface-variant">Doanh thu (YTD)</h3>
-            <p className="font-headline-md text-headline-md font-bold text-on-background mt-1">$42,500</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Main Content Area: Table and Notifications */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-lg mb-xl">
-        {/* Active Tournaments Table */}
-        <div className="lg:col-span-2 bg-white/60 backdrop-blur-xl border border-white/50 shadow-[0_8px_32px_rgba(0,0,0,0.04)] rounded-3xl p-lg overflow-hidden flex flex-col">
-          <div className="flex justify-between items-center mb-md">
-            <h2 className="font-title-lg text-title-lg font-bold text-on-background">Giải đấu đang diễn ra</h2>
-            <Link to="/tournaments" className="text-primary hover:text-primary-container font-label-md text-label-md flex items-center gap-1">
-              Xem tất cả <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
+          <div className="flex flex-wrap gap-3">
+            <Link to="/create-tournament" className="inline-flex items-center gap-2 px-5 py-3 rounded-2xl bg-primary text-on-primary font-semibold shadow-sm hover:-translate-y-0.5 hover:shadow-md transition-all">
+              <span className="material-symbols-outlined text-[20px]">add</span>
+              Tạo sự kiện
+            </Link>
+            <Link to="/host/tournaments" className="inline-flex items-center gap-2 px-5 py-3 rounded-2xl bg-white/80 text-on-background border border-outline-variant/60 font-semibold hover:bg-white transition-all">
+              <span className="material-symbols-outlined text-[20px]">emoji_events</span>
+              Xem giải của tôi
             </Link>
           </div>
-          <div className="overflow-x-auto w-full">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="border-b border-outline-variant/50 text-on-surface-variant font-label-md text-label-md uppercase">
-                  <th className="py-3 px-4 font-semibold">Tên giải đấu</th>
-                  <th className="py-3 px-4 font-semibold">Trạng thái</th>
-                  <th className="py-3 px-4 font-semibold">Vận động viên</th>
-                  <th className="py-3 px-4 font-semibold text-right">Thao tác</th>
-                </tr>
-              </thead>
-              <tbody className="font-body-sm text-body-sm text-on-surface">
-                <tr className="border-b border-outline-variant/30 hover:bg-surface-container/50 transition-colors">
-                  <td className="py-4 px-4">
-                    <p className="font-semibold text-on-background">Giải Cầu lông Đà Nẵng Mở rộng 2024</p>
-                    <p className="text-on-surface-variant text-[12px] mt-0.5">15 Th8 - 20 Th8 • Sân trong nhà</p>
-                  </td>
-                  <td className="py-4 px-4"><span className="inline-flex items-center px-2 py-0.5 rounded-full text-[12px] font-semibold bg-surface-container text-primary">Đang diễn ra</span></td>
-                  <td className="py-4 px-4">64 / 64</td>
-                  <td className="py-4 px-4 text-right">
-                    <div className="flex justify-end gap-2">
-                      <button className="p-1.5 rounded-md text-on-surface-variant hover:bg-surface-variant hover:text-primary transition-colors" title="Xem"><span className="material-symbols-outlined text-[20px]">visibility</span></button>
-                      <button className="p-1.5 rounded-md text-on-surface-variant hover:bg-surface-variant hover:text-primary transition-colors" title="Sửa"><span className="material-symbols-outlined text-[20px]">edit</span></button>
-                      <button className="p-1.5 rounded-md text-on-surface-variant hover:bg-surface-variant hover:text-primary transition-colors" title="Quản lý vận động viên"><span className="material-symbols-outlined text-[20px]">manage_accounts</span></button>
+        </div>
+      </section>
+
+      <section className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-lg">
+        {metrics.map((metric, index) => {
+          const href =
+            metric.key === 'events'
+              ? '/host/tournaments'
+              : metric.key === 'pending'
+                ? '/participants?status=pending'
+                : metric.key === 'athletes'
+                  ? '/participants?status=approved'
+                  : '/host/tournaments';
+          const icon = metric.key === 'events' ? 'event_available' : metric.key === 'pending' ? 'pending_actions' : metric.key === 'athletes' ? 'group' : 'bar_chart';
+          return (
+            <Link key={metric.key} to={href} className={`glass-card rounded-[28px] p-lg animate-fade-in-up delay-${Math.min((index + 1) * 100, 700)} hover:-translate-y-1 transition-transform`}>
+              <div className="flex items-start justify-between gap-4">
+                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${metric.key === 'events' ? 'text-primary bg-primary-container/20' : metric.key === 'pending' ? 'text-secondary bg-secondary-container/20' : metric.key === 'athletes' ? 'text-tertiary bg-tertiary-container/20' : 'text-[#2e7d32] bg-[#eaf7ec]'}`}>
+                  <span className="material-symbols-outlined">{icon}</span>
+                </div>
+                <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-surface-container-low text-on-surface-variant">Click to open</span>
+              </div>
+              <div className="mt-6">
+                <p className="text-sm text-on-surface-variant">{metric.label}</p>
+                <h2 className="mt-1 text-[2rem] leading-none font-bold text-on-background">{metric.value}</h2>
+              </div>
+            </Link>
+          );
+        })}
+      </section>
+
+      <section className="grid grid-cols-1 xl:grid-cols-12 gap-lg">
+        <div className="xl:col-span-8 space-y-lg">
+          <article className="glass-card rounded-[28px] p-lg">
+            <div className="flex items-center justify-between gap-4 mb-5">
+              <div>
+                <h2 className="font-title-lg text-title-lg font-bold text-on-background">Sự kiện đang vận hành</h2>
+                <p className="text-sm text-on-surface-variant mt-1">Bấm vào từng sự kiện để xem trang chi tiết.</p>
+              </div>
+              <Link to="/host/tournaments" className="text-primary font-semibold text-sm flex items-center gap-1 hover:text-primary-container transition-colors">
+                Xem tất cả
+                <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
+              </Link>
+            </div>
+            <div className="space-y-4">
+              {HOST_EVENTS.map((event) => (
+                <Link key={event.id} to={`/event/${event.id}`} className="rounded-2xl border border-outline-variant/50 bg-white/70 p-4 hover:bg-white transition-colors block">
+                  <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                    <div>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h3 className="font-semibold text-on-background">{event.title}</h3>
+                        <span className="text-xs px-2 py-1 rounded-full bg-primary-container/50 text-primary font-semibold">{event.status}</span>
+                      </div>
+                      <p className="text-sm text-on-surface-variant mt-1">{event.date} • {event.venue}</p>
                     </div>
-                  </td>
-                </tr>
-                <tr className="border-b border-outline-variant/30 hover:bg-surface-container/50 transition-colors">
-                  <td className="py-4 px-4">
-                    <p className="font-semibold text-on-background">Giải Vô địch Quận Hải Châu</p>
-                    <p className="text-on-surface-variant text-[12px] mt-0.5">10 Th9 - 12 Th9 • Sân thảm</p>
-                  </td>
-                  <td className="py-4 px-4"><span className="inline-flex items-center px-2 py-0.5 rounded-full text-[12px] font-semibold bg-[#e8f5e9] text-[#2e7d32]">Đang mở đăng ký</span></td>
-                  <td className="py-4 px-4">32 / 48</td>
-                  <td className="py-4 px-4 text-right">
-                    <div className="flex justify-end gap-2">
-                      <button className="p-1.5 rounded-md text-on-surface-variant hover:bg-surface-variant hover:text-primary transition-colors"><span className="material-symbols-outlined text-[20px]">visibility</span></button>
-                      <button className="p-1.5 rounded-md text-on-surface-variant hover:bg-surface-variant hover:text-primary transition-colors"><span className="material-symbols-outlined text-[20px]">edit</span></button>
-                      <button className="p-1.5 rounded-md text-on-surface-variant hover:bg-surface-variant hover:text-primary transition-colors"><span className="material-symbols-outlined text-[20px]">manage_accounts</span></button>
+                    <div className="flex items-center gap-5">
+                      <div className="text-right">
+                        <p className="text-xs text-on-surface-variant">Tỉ lệ lấp đầy</p>
+                        <p className="font-semibold text-on-background">{event.capacity}</p>
+                      </div>
+                      <div className="w-36">
+                        <div className="h-2 rounded-full bg-surface-container overflow-hidden">
+                          <div className="h-full rounded-full bg-primary" style={{ width: event.progress }} />
+                        </div>
+                        <p className="text-xs text-on-surface-variant mt-2 text-right">{event.progress}</p>
+                      </div>
                     </div>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </article>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-lg">
+            <article className="glass-card rounded-[28px] p-lg">
+              <div className="flex items-center justify-between mb-5">
+                <div>
+                  <h2 className="font-title-lg text-title-lg font-bold text-on-background">Lịch hôm nay</h2>
+                  <p className="text-sm text-on-surface-variant mt-1">Những mốc vận hành cần xử lý trong ngày.</p>
+                </div>
+                <span className="text-xs font-semibold px-2 py-1 rounded-full bg-secondary-container/40 text-secondary">Today</span>
+              </div>
+              <div className="space-y-4">
+                {schedule.map((item) => (
+                  <div key={`${item.time}-${item.title}`} className="flex gap-4 items-start">
+                    <div className="min-w-16 text-sm font-bold text-primary">{item.time}</div>
+                    <div className="flex-1 pb-4 border-b border-outline-variant/40 last:border-b-0 last:pb-0">
+                      <p className="font-semibold text-on-background">{item.title}</p>
+                      <p className="text-sm text-on-surface-variant mt-1">{item.meta}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </article>
+
+            <article className="glass-card rounded-[28px] p-lg">
+              <div className="flex items-center justify-between mb-5">
+                <div>
+                  <h2 className="font-title-lg text-title-lg font-bold text-on-background">Checklist trước giải</h2>
+                  <p className="text-sm text-on-surface-variant mt-1">Bộ việc cần hoàn tất trước khi mở sân.</p>
+                </div>
+              </div>
+              <div className="space-y-3">
+                {checklist.map((item) => (
+                  <label key={item} className="flex items-center gap-3 rounded-2xl border border-outline-variant/50 bg-white/70 px-4 py-3">
+                    <input type="checkbox" className="h-4 w-4 accent-[color:var(--color-primary)]" defaultChecked={item === 'Kiểm tra sân bãi và khung giờ'} />
+                    <span className="text-sm text-on-background">{item}</span>
+                  </label>
+                ))}
+              </div>
+            </article>
           </div>
         </div>
-        
-        {/* Notification Center */}
-        <div className="lg:col-span-1 bg-white/60 backdrop-blur-xl border border-white/50 shadow-[0_8px_32px_rgba(0,0,0,0.04)] rounded-3xl p-lg flex flex-col h-full max-h-[500px]">
-          <div className="flex justify-between items-center mb-md pb-2 border-b border-outline-variant/50">
-            <h2 className="font-title-lg text-title-lg font-bold text-on-background">Đăng ký gần đây</h2>
-            <span className="bg-secondary-container text-on-secondary-container text-[10px] font-bold px-2 py-0.5 rounded-full">Mới</span>
-          </div>
-          <div className="flex-1 overflow-y-auto pr-2 space-y-4 custom-scrollbar">
-            <div className="flex items-start gap-3 p-3 rounded-lg hover:bg-surface-container/50 transition-colors">
-              <img alt="Player Avatar" className="w-10 h-10 rounded-full object-cover flex-shrink-0" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC_NcKrexQFEBfQxfP_a4_sjsRo3kK7FVPac60uScC0x7c2bCecWRvO_uSKQ278pTBlSLAdBxf0debZx65JH0ylESrCRZ_4w_zFxwERL0KpBK3p8KsF346g0ss1kA5X4qpTletGTlihjgRg1y34FWRxiNA-Id_hCj4p3TpPFJg_OIW8Hf3YeYAuDQLUu-lIfGPSUB5z98ZuRSxWtugW172EJpv2aUZW_YZbY_jvrz_9y4g-0KOSJ0LjDQ" />
+
+        <div className="xl:col-span-4 space-y-lg">
+          <article className="glass-card rounded-[28px] p-lg">
+            <div className="flex items-center justify-between mb-5">
               <div>
-                <p className="font-body-sm text-body-sm text-on-background"><span className="font-semibold">Alex Chen</span> đã đăng ký cho <span className="font-semibold">City Fall Classic</span></p>
-                <p className="font-label-md text-label-md text-on-surface-variant mt-1">2 phút trước</p>
+                <h2 className="font-title-lg text-title-lg font-bold text-on-background">Hàng chờ duyệt</h2>
+                <p className="text-sm text-on-surface-variant mt-1">Các yêu cầu cần phản hồi sớm.</p>
               </div>
+              <span className="text-xs font-semibold px-2 py-1 rounded-full bg-secondary-container/50 text-secondary">{pendingCount > 0 ? `${pendingCount} mới` : 'Mẫu'}</span>
             </div>
-            
-            <div className="flex items-start gap-3 p-3 rounded-lg hover:bg-surface-container/50 transition-colors">
-              <img alt="Player Avatar" className="w-10 h-10 rounded-full object-cover flex-shrink-0" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBuFzkeVo2_rh0MxbcE95KD7osmE3WePAvlxVGJFI0A1CQpK2PKso2Gk6el6E6JrDI0kDfSdgGDqOk4oGpjy5iFOZ9oPKui52n0kjrGwcqzjwsi-M079BoptLrLQo_iAwQW5n1E3XWqsPqkJwYgszx0h40gKJk5nO2R4QI5ZyCmpNNxZfOcyWi8neBGqcyoYJU8Ab-XSFWhmoFkHT1Rdy1ORes8XLuowFb0Vpo6v4NrsP0jH56vFeGZSw" />
-              <div>
-                <p className="font-body-sm text-body-sm text-on-background"><span className="font-semibold">Sarah Jenkins</span> đã đăng ký cho <span className="font-semibold">City Fall Classic</span></p>
-                <p className="font-label-md text-label-md text-on-surface-variant mt-1">1 giờ trước</p>
-              </div>
+            <div className="space-y-3">
+              {approvalQueue.map((item, idx) => (
+                <div key={item.id || `${item.name}-${item.event}-${idx}`} className="rounded-2xl border border-outline-variant/50 bg-white/75 p-4">
+                  <div className="flex items-start gap-3">
+                    <div className="w-10 h-10 rounded-2xl bg-primary-container/40 text-primary flex items-center justify-center shrink-0">
+                      <span className="material-symbols-outlined text-[20px]">person</span>
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="font-semibold text-on-background truncate">{item.name}</p>
+                      <p className="text-sm text-on-surface-variant mt-1">{item.event}</p>
+                      <p className="text-xs text-on-surface-variant mt-2">{item.time} • {item.action}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
-          </div>
-          <Link to="/participants" className="w-full mt-4 pt-3 border-t border-outline-variant/50 text-center font-label-md text-label-md text-primary hover:text-primary-container transition-colors block">
-            Xem toàn bộ hoạt động
-          </Link>
+          </article>
+
+          <article className="glass-card rounded-[28px] p-lg">
+            <h2 className="font-title-lg text-title-lg font-bold text-on-background">Hoạt động gần đây</h2>
+            <div className="mt-4 space-y-3">
+              {recentActivity.map((item, index) => (
+                <div key={item} className="flex gap-3 items-start">
+                  <div className="mt-1 w-2.5 h-2.5 rounded-full bg-primary shrink-0" />
+                  <p className="text-sm text-on-surface-variant">{index + 1}. {item}</p>
+                </div>
+              ))}
+            </div>
+          </article>
         </div>
-      </div>
-    </>
+      </section>
+    </div>
   );
 }

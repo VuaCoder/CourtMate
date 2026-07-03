@@ -1,9 +1,5 @@
-<<<<<<< HEAD
 import React, { useState, useEffect } from 'react';
 import RegistrationFormModal from './RegistrationFormModal';
-=======
-import { useEffect } from 'react';
->>>>>>> 58e1b9a3371a379ec0ac06a7bb3c968561b77023
 
 interface TournamentDetailsModalProps {
   isOpen: boolean;
